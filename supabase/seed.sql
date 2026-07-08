@@ -19,9 +19,12 @@ values
    crypt('senha123', gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{"nome":"Bruno Costa"}', now(), now());
 
+-- A partir da migration 0004 o trigger em auth.users já cria estas linhas;
+-- o on conflict mantém o seed idempotente nos dois cenários.
 insert into funcionarios (id, nome, ativo) values
   ('11111111-1111-1111-1111-111111111111', 'Ana Ribeiro', true),
-  ('22222222-2222-2222-2222-222222222222', 'Bruno Costa', true);
+  ('22222222-2222-2222-2222-222222222222', 'Bruno Costa', true)
+on conflict (id) do update set nome = excluded.nome, ativo = excluded.ativo;
 
 -- 6 quartos variados
 insert into quartos (nome, camas_casal, camas_solteiro, capacidade_max, observacoes) values

@@ -16,3 +16,6 @@ dist/
 # editores
 .vscode/
 .idea/
+
+# cache do vite
+.vite/
