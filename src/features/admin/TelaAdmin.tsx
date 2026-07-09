@@ -6,15 +6,20 @@ import { useBloqueios, useBloqueiosAdmin } from './useBloqueios'
 import { formatarData } from '../../lib/formatadores'
 import { FormQuarto } from './FormQuarto'
 import { FormBloqueio } from './FormBloqueio'
+import { FormItemExtra } from './FormItemExtra'
 import { SecaoValores } from './SecaoValores'
+import { useItensExtras, type ItemExtra } from './useItensExtras'
+import { formatarMoeda, reaisParaCentavos } from '../../lib/formatadores'
 
 export function TelaAdmin() {
   const quartos = useQuartos()
   const bloqueios = useBloqueios()
+  const itensExtras = useItensExtras()
   const { excluir: desbloquear } = useBloqueiosAdmin()
 
   const [modalQuarto, setModalQuarto] = useState<{ quarto: Quarto | null } | null>(null)
   const [modalBloqueio, setModalBloqueio] = useState(false)
+  const [modalItem, setModalItem] = useState<{ item: ItemExtra | null } | null>(null)
 
   if (quartos.isLoading) return <p className="p-4 text-slate-500">Carregando…</p>
   if (quartos.isError)
@@ -105,10 +110,52 @@ export function TelaAdmin() {
         </ul>
       </section>
 
+      <section>
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-800">Itens extras</h2>
+          <Button variante="secundario" onClick={() => setModalItem({ item: null })}>
+            + Novo item
+          </Button>
+        </div>
+        <ul className="flex flex-col gap-2">
+          {itensExtras.data?.map((item) => (
+            <li
+              key={item.id}
+              className="flex items-center justify-between gap-2 rounded-lg bg-white p-3"
+            >
+              <div>
+                <p className="font-semibold text-slate-800">
+                  {item.nome}
+                  {!item.ativo && (
+                    <span className="ml-2 align-middle">
+                      <Badge variante="nao_pago">Fora do cardápio</Badge>
+                    </span>
+                  )}
+                </p>
+                <p className="text-sm text-slate-500">
+                  {formatarMoeda(reaisParaCentavos(item.valor_unitario))}
+                </p>
+              </div>
+              <button
+                onClick={() => setModalItem({ item })}
+                className="min-h-11 rounded-lg px-3 text-sm font-medium text-slate-600 active:bg-slate-100"
+              >
+                Editar
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <FormQuarto
         aberto={modalQuarto !== null}
         quarto={modalQuarto?.quarto ?? null}
         aoFechar={() => setModalQuarto(null)}
+      />
+      <FormItemExtra
+        aberto={modalItem !== null}
+        item={modalItem?.item ?? null}
+        aoFechar={() => setModalItem(null)}
       />
       <FormBloqueio
         aberto={modalBloqueio}

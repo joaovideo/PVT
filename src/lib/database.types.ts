@@ -175,6 +175,27 @@ export type Database = {
         }
         Relationships: []
       }
+      itens_extras_catalogo: {
+        Row: {
+          ativo: boolean
+          id: number
+          nome: string
+          valor_unitario: number
+        }
+        Insert: {
+          ativo?: boolean
+          id?: number
+          nome: string
+          valor_unitario: number
+        }
+        Update: {
+          ativo?: boolean
+          id?: number
+          nome?: string
+          valor_unitario?: number
+        }
+        Relationships: []
+      }
       pagamentos: {
         Row: {
           id: number
