@@ -135,26 +135,47 @@ create table pagamentos (
   recebido_em timestamptz not null default now(),
   observacao text
 );
+
+-- Despesas extras lançadas na conta da reserva
+-- (café da manhã extra, caldo, refrigerante, lanche etc.)
+create table despesas_extras (
+  id serial primary key,
+  reserva_id int not null references reservas(id),
+  descricao text not null,
+  quantidade int not null default 1 check (quantidade > 0),
+  valor_unitario numeric(10,2) not null,
+  lancada_por uuid not null references funcionarios(id),
+  lancada_em timestamptz not null default now()
+);
 ```
 
 O ponto central do modelo é `reserva_segmentos`: ele torna a "combinação de quartos" um cidadão de primeira classe do banco, em vez de gambiarra. A disponibilidade de um quarto num período é calculada verificando sobreposição de segmentos ativos (`status <> 'cancelada'`) **e de bloqueios** (manutenção/reforma). Crie um índice em `(quarto_id, data_inicio, data_fim)` e uma constraint de exclusão (`EXCLUDE USING gist`) para impedir overbooking no nível do banco — nunca confie só no frontend.
 
 > **Nota de versionamento:** o banco criado no sprint 0 (migrations 0001–0004) tem `tarifas.valor_diaria` e não tem `nivel_preco` nem `bloqueios`. Essas mudanças entram como **migration 0005** — nunca editar migrations já aplicadas.
 
-O status de pagamento da reserva é derivado: `sum(pagamentos.valor)` comparado a `valor_total` → **não pago / parcial / pago**. Não armazene esse status; calcule via view:
+O status de pagamento da reserva é derivado: `sum(pagamentos.valor)` comparado ao **valor final** (estadia + despesas extras) → **não pago / parcial / pago**. Não armazene esse status; calcule via view:
 
 ```sql
 create view reservas_financeiro as
+with pagos as (
+  select reserva_id, sum(valor) as total_pago
+  from pagamentos group by reserva_id
+), despesas as (
+  select reserva_id, sum(quantidade * valor_unitario) as total_despesas
+  from despesas_extras group by reserva_id
+)
 select r.id, r.valor_total,
-       coalesce(sum(p.valor),0) as total_pago,
+       coalesce(d.total_despesas,0)                  as total_despesas,
+       r.valor_total + coalesce(d.total_despesas,0)  as valor_final,
+       coalesce(p.total_pago,0)                      as total_pago,
        case
-         when coalesce(sum(p.valor),0) = 0 then 'nao_pago'
-         when coalesce(sum(p.valor),0) < r.valor_total then 'parcial'
+         when coalesce(p.total_pago,0) = 0 then 'nao_pago'
+         when coalesce(p.total_pago,0) < r.valor_total + coalesce(d.total_despesas,0) then 'parcial'
          else 'pago'
        end as situacao
 from reservas r
-left join pagamentos p on p.reserva_id = r.id
-group by r.id;
+left join pagos p on p.reserva_id = r.id
+left join despesas d on d.reserva_id = r.id;
 ```
 
 ## 4. Telas (mobile-first)
@@ -167,7 +188,7 @@ group by r.id;
 
 **Nova reserva.** Hóspede (busca ou cadastro rápido), período, hora prevista de chegada, ocupação, **nível de preço**, quarto(s), valor calculado automaticamente pela tabela de tarifas com possibilidade de ajuste manual. O funcionário logado é gravado automaticamente como `criada_por`.
 
-**Detalhe da reserva.** Tudo em uma tela: dados do hóspede, segmentos de quarto, situação financeira com histórico de pagamentos (valor, método, quem recebeu, quando), botão "Registrar pagamento", botões de check-in/check-out, quem criou a reserva. **No check-out o app apresenta o valor final da estadia e o saldo a receber** (valor total − pagamentos já feitos).
+**Detalhe da reserva.** Tudo em uma tela: dados do hóspede, segmentos de quarto, situação financeira com histórico de pagamentos (valor, método, quem recebeu, quando), botão "Registrar pagamento", **botão "Lançar despesa" para consumo extra (café da manhã extra, caldo, refrigerante, lanche etc., com quantidade, valor e quem lançou)**, botões de check-in/check-out, quem criou a reserva. **No check-out o app apresenta a conta fechada: estadia + despesas extras − pagamentos = saldo a receber.**
 
 **Chegadas do dia.** Lista das reservas com check-in hoje, ordenada por hora prevista de chegada — a tela que a recepção deixa aberta.
 
