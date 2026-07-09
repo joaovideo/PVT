@@ -433,6 +433,24 @@ export type Database = {
       }
     }
     Functions: {
+      criar_reserva: {
+        Args: {
+          p_adultos: number
+          p_checkin: string
+          p_checkout: string
+          p_criancas: number
+          p_hora_chegada?: string
+          p_hospede_id?: number
+          p_hospede_nome?: string
+          p_hospede_telefone?: string
+          p_nivel: string
+          p_quarto_id: number
+          p_sinal_metodo?: string
+          p_sinal_valor?: number
+          p_valor_total: number
+        }
+        Returns: number
+      }
       dearmor: { Args: { '': string }; Returns: string }
       formatar_brl: { Args: { v: number }; Returns: string }
       funcionario_ativo: { Args: never; Returns: boolean }
