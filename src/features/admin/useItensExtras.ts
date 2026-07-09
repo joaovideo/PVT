@@ -54,5 +54,15 @@ export function useItensExtrasAdmin() {
     onSuccess: aoMudar,
   })
 
-  return { criar, atualizar }
+  // Só admin (RLS). Despesas já lançadas não são afetadas — elas guardam
+  // descrição e valor próprios, não uma referência ao item do catálogo.
+  const apagar = useMutation({
+    mutationFn: async (id: number) => {
+      const { error } = await supabase.from('itens_extras_catalogo').delete().eq('id', id)
+      if (error) throw error
+    },
+    onSuccess: aoMudar,
+  })
+
+  return { criar, atualizar, apagar }
 }

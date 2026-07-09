@@ -6,30 +6,36 @@ export type Database = {
       bloqueios: {
         Row: {
           criado_em: string
-          criado_por: string
+          criado_por: string | null
+          criado_por_nome: string | null
           data_fim: string
           data_inicio: string
           id: number
           motivo: string
-          quarto_id: number
+          quarto_id: number | null
+          quarto_nome: string | null
         }
         Insert: {
           criado_em?: string
-          criado_por: string
+          criado_por?: string | null
+          criado_por_nome?: string | null
           data_fim: string
           data_inicio: string
           id?: number
           motivo: string
-          quarto_id: number
+          quarto_id?: number | null
+          quarto_nome?: string | null
         }
         Update: {
           criado_em?: string
-          criado_por?: string
+          criado_por?: string | null
+          criado_por_nome?: string | null
           data_fim?: string
           data_inicio?: string
           id?: number
           motivo?: string
-          quarto_id?: number
+          quarto_id?: number | null
+          quarto_nome?: string | null
         }
         Relationships: [
           {
@@ -86,7 +92,8 @@ export type Database = {
           descricao: string
           id: number
           lancada_em: string
-          lancada_por: string
+          lancada_por: string | null
+          lancada_por_nome: string | null
           quantidade: number
           reserva_id: number
           valor_unitario: number
@@ -95,7 +102,8 @@ export type Database = {
           descricao: string
           id?: number
           lancada_em?: string
-          lancada_por: string
+          lancada_por?: string | null
+          lancada_por_nome?: string | null
           quantidade?: number
           reserva_id: number
           valor_unitario: number
@@ -104,7 +112,8 @@ export type Database = {
           descricao?: string
           id?: number
           lancada_em?: string
-          lancada_por?: string
+          lancada_por?: string | null
+          lancada_por_nome?: string | null
           quantidade?: number
           reserva_id?: number
           valor_unitario?: number
@@ -135,17 +144,23 @@ export type Database = {
       }
       funcionarios: {
         Row: {
+          admin: boolean
           ativo: boolean
+          email: string | null
           id: string
           nome: string
         }
         Insert: {
+          admin?: boolean
           ativo?: boolean
+          email?: string | null
           id: string
           nome: string
         }
         Update: {
+          admin?: boolean
           ativo?: boolean
+          email?: string | null
           id?: string
           nome?: string
         }
@@ -202,7 +217,8 @@ export type Database = {
           metodo: string
           observacao: string | null
           recebido_em: string
-          recebido_por: string
+          recebido_por: string | null
+          recebido_por_nome: string | null
           reserva_id: number
           valor: number
         }
@@ -211,7 +227,8 @@ export type Database = {
           metodo: string
           observacao?: string | null
           recebido_em?: string
-          recebido_por: string
+          recebido_por?: string | null
+          recebido_por_nome?: string | null
           reserva_id: number
           valor: number
         }
@@ -220,7 +237,8 @@ export type Database = {
           metodo?: string
           observacao?: string | null
           recebido_em?: string
-          recebido_por?: string
+          recebido_por?: string | null
+          recebido_por_nome?: string | null
           reserva_id?: number
           valor?: number
         }
@@ -333,7 +351,8 @@ export type Database = {
           data_fim: string
           data_inicio: string
           id: number
-          quarto_id: number
+          quarto_id: number | null
+          quarto_nome: string | null
           reserva_id: number
         }
         Insert: {
@@ -341,7 +360,8 @@ export type Database = {
           data_fim: string
           data_inicio: string
           id?: number
-          quarto_id: number
+          quarto_id?: number | null
+          quarto_nome?: string | null
           reserva_id: number
         }
         Update: {
@@ -349,7 +369,8 @@ export type Database = {
           data_fim?: string
           data_inicio?: string
           id?: number
-          quarto_id?: number
+          quarto_id?: number | null
+          quarto_nome?: string | null
           reserva_id?: number
         }
         Relationships: [
@@ -380,7 +401,8 @@ export type Database = {
         Row: {
           adultos: number
           criada_em: string
-          criada_por: string
+          criada_por: string | null
+          criada_por_nome: string | null
           criancas: number
           data_checkin: string
           data_checkout: string
@@ -395,7 +417,8 @@ export type Database = {
         Insert: {
           adultos?: number
           criada_em?: string
-          criada_por: string
+          criada_por?: string | null
+          criada_por_nome?: string | null
           criancas?: number
           data_checkin: string
           data_checkout: string
@@ -410,7 +433,8 @@ export type Database = {
         Update: {
           adultos?: number
           criada_em?: string
-          criada_por?: string
+          criada_por?: string | null
+          criada_por_nome?: string | null
           criancas?: number
           data_checkin?: string
           data_checkout?: string
@@ -472,15 +496,9 @@ export type Database = {
         }
         Returns: number
       }
-      dearmor: { Args: { '': string }; Returns: string }
       formatar_brl: { Args: { v: number }; Returns: string }
       funcionario_ativo: { Args: never; Returns: boolean }
-      gen_random_uuid: { Args: never; Returns: string }
-      gen_salt: { Args: { '': string }; Returns: string }
-      pgp_armor_headers: {
-        Args: { '': string }
-        Returns: Record<string, unknown>[]
-      }
+      funcionario_eh_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
