@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '../../lib/supabaseClient'
+import { supabase, urlBaseApp } from '../../lib/supabaseClient'
 import type { Tables } from '../../lib/database.types'
 
 export type Funcionario = Tables<'funcionarios'>
@@ -32,7 +32,7 @@ export function useCriarFuncionario() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password: senha,
-        options: { data: { nome } },
+        options: { data: { nome }, emailRedirectTo: urlBaseApp },
       })
       if (error) throw error
       return data
@@ -84,7 +84,7 @@ export function useEnviarResetSenha() {
   return useMutation({
     mutationFn: async (email: string) => {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}${window.location.pathname}#/nova-senha`,
+        redirectTo: urlBaseApp,
       })
       if (error) throw error
     },
