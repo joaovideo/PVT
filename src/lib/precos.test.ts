@@ -1,37 +1,39 @@
-import { calcularDiaria, calcularEstadia, type ConfigPousada } from './precos'
+import { calcularEstadia, precoDiariaCentavos, type NivelPreco } from './precos'
+import type { Tables } from './database.types'
 
-const config: ConfigPousada = {
+const quarto = {
   id: 1,
-  adulto_valor_desconto: 100,
-  adulto_valor_normal: 120,
-  adulto_valor_full: 150,
-  crianca_valor_desconto: 40,
-  crianca_valor_normal: 50,
-  crianca_valor_full: 60,
-  crianca_idade_max: 12,
-}
+  nome: 'Quarto 1',
+  camas_casal: 1,
+  camas_solteiro: 0,
+  capacidade_max: 2,
+  observacoes: null,
+  ativo: true,
+  preco_baixa: 180,
+  preco_alta: 260,
+  preco_fds: 220,
+} as Tables<'quartos'>
 
-describe('calcularDiaria', () => {
-  it('1 adulto no normal = valor unitário do adulto (em centavos)', () => {
-    expect(calcularDiaria(config, 'normal', 1, 0)).toBe(12000)
+describe('precoDiariaCentavos', () => {
+  it('retorna o preço do quarto no nível escolhido, em centavos', () => {
+    expect(precoDiariaCentavos(quarto, 'baixa')).toBe(18000)
+    expect(precoDiariaCentavos(quarto, 'alta')).toBe(26000)
+    expect(precoDiariaCentavos(quarto, 'fds')).toBe(22000)
   })
 
-  it('2 adultos = 2× o valor (linear na ocupação)', () => {
-    expect(calcularDiaria(config, 'normal', 2, 0)).toBe(24000)
-  })
-
-  it('casal + 1 criança no normal = 2×120 + 1×50', () => {
-    expect(calcularDiaria(config, 'normal', 2, 1)).toBe(29000)
-  })
-
-  it('respeita o nível de preço (desconto e full)', () => {
-    expect(calcularDiaria(config, 'desconto', 2, 1)).toBe(24000)
-    expect(calcularDiaria(config, 'full', 2, 1)).toBe(36000)
+  it('retorna null no nível custom (valor manual)', () => {
+    expect(precoDiariaCentavos(quarto, 'custom')).toBeNull()
   })
 })
 
 describe('calcularEstadia', () => {
-  it('multiplica a diária pelo nº de diárias', () => {
-    expect(calcularEstadia(config, 'normal', 2, 1, 3)).toBe(87000)
+  it('multiplica a diária do quarto pelo nº de diárias', () => {
+    expect(calcularEstadia(quarto, 'baixa', 3)).toBe(54000)
+    expect(calcularEstadia(quarto, 'alta', 2)).toBe(52000)
+  })
+
+  it('retorna null no nível custom', () => {
+    const nivel: NivelPreco = 'custom'
+    expect(calcularEstadia(quarto, nivel, 3)).toBeNull()
   })
 })

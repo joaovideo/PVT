@@ -18,6 +18,9 @@ export function FormQuarto({ aberto, quarto, aoFechar }: Props) {
   const [camasSolteiro, setCamasSolteiro] = useState(0)
   const [capacidade, setCapacidade] = useState(2)
   const [observacoes, setObservacoes] = useState('')
+  const [precoBaixa, setPrecoBaixa] = useState('')
+  const [precoAlta, setPrecoAlta] = useState('')
+  const [precoFds, setPrecoFds] = useState('')
   const [ativo, setAtivo] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
 
@@ -28,6 +31,9 @@ export function FormQuarto({ aberto, quarto, aoFechar }: Props) {
     setCamasSolteiro(quarto?.camas_solteiro ?? 0)
     setCapacidade(quarto?.capacidade_max ?? 2)
     setObservacoes(quarto?.observacoes ?? '')
+    setPrecoBaixa(quarto ? String(quarto.preco_baixa) : '')
+    setPrecoAlta(quarto ? String(quarto.preco_alta) : '')
+    setPrecoFds(quarto ? String(quarto.preco_fds) : '')
     setAtivo(quarto?.ativo ?? true)
     setErro(null)
   }, [aberto, quarto])
@@ -43,6 +49,9 @@ export function FormQuarto({ aberto, quarto, aoFechar }: Props) {
       camas_solteiro: camasSolteiro,
       capacidade_max: capacidade,
       observacoes: observacoes || null,
+      preco_baixa: Number(precoBaixa) || 0,
+      preco_alta: Number(precoAlta) || 0,
+      preco_fds: Number(precoFds) || 0,
       ativo,
     }
     try {
@@ -89,6 +98,38 @@ export function FormQuarto({ aberto, quarto, aoFechar }: Props) {
           value={observacoes}
           onChange={(e) => setObservacoes(e.target.value)}
         />
+        <div>
+          <p className="mb-1 text-sm font-medium text-slate-700">Preço da diária (R$)</p>
+          <div className="grid grid-cols-3 gap-2">
+            <Input
+              rotulo="Baixa temp."
+              type="number"
+              min={0}
+              step="0.01"
+              inputMode="decimal"
+              value={precoBaixa}
+              onChange={(e) => setPrecoBaixa(e.target.value)}
+            />
+            <Input
+              rotulo="Alta temp."
+              type="number"
+              min={0}
+              step="0.01"
+              inputMode="decimal"
+              value={precoAlta}
+              onChange={(e) => setPrecoAlta(e.target.value)}
+            />
+            <Input
+              rotulo="Fim de semana"
+              type="number"
+              min={0}
+              step="0.01"
+              inputMode="decimal"
+              value={precoFds}
+              onChange={(e) => setPrecoFds(e.target.value)}
+            />
+          </div>
+        </div>
         {quarto && (
           <label className="flex min-h-11 items-center gap-2 text-sm font-medium text-slate-700">
             <input
