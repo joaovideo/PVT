@@ -29,7 +29,11 @@ export function useFuncionarioAtual() {
   useEffect(() => {
     // Bypass SÓ em dev (import.meta.env.DEV é false em build de produção):
     // permite ver o shell sem Supabase configurado. VITE_BYPASS_AUTH=1 no .env.local.
-    if (import.meta.env.DEV && import.meta.env.VITE_BYPASS_AUTH === '1') {
+    if (
+      import.meta.env.DEV &&
+      import.meta.env.MODE !== 'test' &&
+      import.meta.env.VITE_BYPASS_AUTH === '1'
+    ) {
       setEstado({
         carregando: false,
         session: {} as Session,
