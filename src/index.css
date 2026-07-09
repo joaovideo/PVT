@@ -1,1 +1,16 @@
 @import 'tailwindcss';
+
+/* Tokens do tema PVT — paleta de status usada no mapa de quartos e badges */
+@theme {
+  --color-marca: #1e293b;
+  --color-fundo: #f8fafc;
+
+  --color-livre-fundo: #e2e8f0;
+  --color-livre-texto: #334155;
+  --color-pago-fundo: #dcfce7;
+  --color-pago-texto: #166534;
+  --color-parcial-fundo: #fef3c7;
+  --color-parcial-texto: #92400e;
+  --color-naopago-fundo: #fee2e2;
+  --color-naopago-texto: #991b1b;
+}
