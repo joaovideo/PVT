@@ -147,6 +147,19 @@ create table despesas_extras (
   lancada_por uuid not null references funcionarios(id),
   lancada_em timestamptz not null default now()
 );
+
+-- Linha do tempo da reserva: log legível de quem fez o quê, alimentado
+-- por triggers (criação, mudança de status/check-in/check-out/cancelamento,
+-- pagamento recebido, despesa lançada). Append-only: sem update nem delete.
+create table reserva_eventos (
+  id serial primary key,
+  reserva_id int not null references reservas(id) on delete cascade,
+  tipo text not null check (tipo in
+    ('criacao','status','pagamento','despesa','bloqueio_quarto')),
+  descricao text not null,          -- ex: "Check-in realizado", "R$ 500,00 via pix"
+  funcionario_id uuid references funcionarios(id),
+  ocorrido_em timestamptz not null default now()
+);
 ```
 
 O ponto central do modelo é `reserva_segmentos`: ele torna a "combinação de quartos" um cidadão de primeira classe do banco, em vez de gambiarra. A disponibilidade de um quarto num período é calculada verificando sobreposição de segmentos ativos (`status <> 'cancelada'`) **e de bloqueios** (manutenção/reforma). Crie um índice em `(quarto_id, data_inicio, data_fim)` e uma constraint de exclusão (`EXCLUDE USING gist`) para impedir overbooking no nível do banco — nunca confie só no frontend.
@@ -189,6 +202,8 @@ left join despesas d on d.reserva_id = r.id;
 **Nova reserva.** Hóspede (busca ou cadastro rápido), período, hora prevista de chegada, ocupação, **nível de preço**, quarto(s), valor calculado automaticamente pela tabela de tarifas com possibilidade de ajuste manual. O funcionário logado é gravado automaticamente como `criada_por`.
 
 **Detalhe da reserva.** Tudo em uma tela: dados do hóspede, segmentos de quarto, situação financeira com histórico de pagamentos (valor, método, quem recebeu, quando), botão "Registrar pagamento", **botão "Lançar despesa" para consumo extra (café da manhã extra, caldo, refrigerante, lanche etc., com quantidade, valor e quem lançou)**, botões de check-in/check-out, quem criou a reserva. **No check-out o app apresenta a conta fechada: estadia + despesas extras − pagamentos = saldo a receber.**
+
+**Histórico (log de atividades).** Na tela da reserva, uma linha do tempo simples e legível de tudo que aconteceu e **qual funcionário fez**: "Ana criou a reserva (nível normal)", "Bruno lançou 2× caldo — R$ 30,00", "Ana recebeu R$ 500,00 via pix", "Bruno fez o check-in". Alimentada automaticamente por triggers na tabela `reserva_eventos` — o funcionário não precisa preencher nada. Append-only: eventos não podem ser editados nem apagados.
 
 **Chegadas do dia.** Lista das reservas com check-in hoje, ordenada por hora prevista de chegada — a tela que a recepção deixa aberta.
 
