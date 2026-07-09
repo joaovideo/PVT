@@ -10,16 +10,23 @@ import { FormItemExtra } from './FormItemExtra'
 import { SecaoValores } from './SecaoValores'
 import { useItensExtras, type ItemExtra } from './useItensExtras'
 import { formatarMoeda, reaisParaCentavos } from '../../lib/formatadores'
+import { FormFuncionario } from './FormFuncionario'
+import { useAtualizarFuncionarioAtivo, useFuncionarios } from './useFuncionarios'
+import { useFuncionarioAtual } from '../auth/useFuncionarioAtual'
 
 export function TelaAdmin() {
   const quartos = useQuartos()
   const bloqueios = useBloqueios()
   const itensExtras = useItensExtras()
+  const funcionarios = useFuncionarios()
+  const atualizarAtivo = useAtualizarFuncionarioAtivo()
+  const { funcionario: funcionarioLogado } = useFuncionarioAtual()
   const { excluir: desbloquear } = useBloqueiosAdmin()
 
   const [modalQuarto, setModalQuarto] = useState<{ quarto: Quarto | null } | null>(null)
   const [modalBloqueio, setModalBloqueio] = useState(false)
   const [modalItem, setModalItem] = useState<{ item: ItemExtra | null } | null>(null)
+  const [modalFuncionario, setModalFuncionario] = useState(false)
 
   if (quartos.isLoading) return <p className="p-4 text-slate-500">Carregando…</p>
   if (quartos.isError)
@@ -147,6 +154,46 @@ export function TelaAdmin() {
         </ul>
       </section>
 
+      <section>
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-800">Funcionários</h2>
+          <Button variante="secundario" onClick={() => setModalFuncionario(true)}>
+            + Novo funcionário
+          </Button>
+        </div>
+        <ul className="flex flex-col gap-2">
+          {funcionarios.data?.map((funcionario) => {
+            const ehVocê = funcionario.id === funcionarioLogado?.id
+            return (
+              <li
+                key={funcionario.id}
+                className="flex items-center justify-between gap-2 rounded-lg bg-white p-3"
+              >
+                <p className="font-semibold text-slate-800">
+                  {funcionario.nome}
+                  {ehVocê && <span className="ml-2 text-xs font-normal text-slate-400">você</span>}
+                  {!funcionario.ativo && (
+                    <span className="ml-2 align-middle">
+                      <Badge variante="nao_pago">Inativo</Badge>
+                    </span>
+                  )}
+                </p>
+                <button
+                  onClick={() =>
+                    atualizarAtivo.mutate({ id: funcionario.id, ativo: !funcionario.ativo })
+                  }
+                  disabled={ehVocê || atualizarAtivo.isPending}
+                  title={ehVocê ? 'Você não pode desativar a si mesmo' : undefined}
+                  className="min-h-11 rounded-lg px-3 text-sm font-medium text-slate-600 active:bg-slate-100 disabled:opacity-40"
+                >
+                  {funcionario.ativo ? 'Desativar' : 'Reativar'}
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      </section>
+
       <FormQuarto
         aberto={modalQuarto !== null}
         quarto={modalQuarto?.quarto ?? null}
@@ -162,6 +209,7 @@ export function TelaAdmin() {
         quartos={ativos}
         aoFechar={() => setModalBloqueio(false)}
       />
+      <FormFuncionario aberto={modalFuncionario} aoFechar={() => setModalFuncionario(false)} />
     </div>
   )
 }
