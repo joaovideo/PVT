@@ -32,8 +32,8 @@ export function TelaTesteDados() {
         <ul className="flex flex-col gap-1">
           {quartos.data?.map((quarto) => (
             <li key={quarto.id} className="rounded-lg bg-white p-3 text-sm text-slate-700">
-              <strong>{quarto.nome}</strong> — {quarto.camas_casal} casal,{' '}
-              {quarto.camas_solteiro} solteiro, até {quarto.capacidade_max} pessoas
+              <strong>{quarto.nome}</strong> — {quarto.camas_casal} casal, {quarto.camas_solteiro}{' '}
+              solteiro, até {quarto.capacidade_max} pessoas
             </li>
           ))}
         </ul>
