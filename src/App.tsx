@@ -9,29 +9,38 @@ import { TelaOrcamento } from './features/reservas/TelaOrcamento'
 import { TelaListaReservas } from './features/reservas/TelaListaReservas'
 import { TelaReservaDetalhe } from './features/reservas/TelaReservaDetalhe'
 import { TelaAdmin } from './features/admin/TelaAdmin'
+import { TelaNovaSenha } from './features/auth/TelaNovaSenha'
 
 // HashRouter: as rotas funcionam no GitHub Pages sem fallback de servidor
 function App() {
   return (
     <QueryProvider>
-      <AuthGate>
-        <HashRouter>
-          <Routes>
-            <Route element={<AppShell />}>
-              <Route path="/" element={<Navigate to="/mapa" replace />} />
-              <Route path="/mapa" element={<TelaMapa />} />
-              <Route path="/chegadas" element={<TelaChegadas />} />
-              <Route path="/reservas" element={<TelaListaReservas />} />
-              <Route path="/reservas/nova" element={<TelaOrcamento />} />
-              <Route path="/reservas/:id" element={<TelaReservaDetalhe />} />
-              <Route path="/admin" element={<TelaAdmin />} />
-              {/* Rota temporária da Issue #6 (fora da navegação): valida os hooks */}
-              <Route path="/dev-dados" element={<TelaTesteDados />} />
-              <Route path="*" element={<Navigate to="/mapa" replace />} />
-            </Route>
-          </Routes>
-        </HashRouter>
-      </AuthGate>
+      <HashRouter>
+        <Routes>
+          {/* Redefinição de senha: fora do AuthGate — o link do e-mail precisa
+              abrir mesmo para quem ainda não é funcionário ativo. */}
+          <Route path="/nova-senha" element={<TelaNovaSenha />} />
+
+          <Route
+            element={
+              <AuthGate>
+                <AppShell />
+              </AuthGate>
+            }
+          >
+            <Route path="/" element={<Navigate to="/mapa" replace />} />
+            <Route path="/mapa" element={<TelaMapa />} />
+            <Route path="/chegadas" element={<TelaChegadas />} />
+            <Route path="/reservas" element={<TelaListaReservas />} />
+            <Route path="/reservas/nova" element={<TelaOrcamento />} />
+            <Route path="/reservas/:id" element={<TelaReservaDetalhe />} />
+            <Route path="/admin" element={<TelaAdmin />} />
+            {/* Rota temporária da Issue #6 (fora da navegação): valida os hooks */}
+            <Route path="/dev-dados" element={<TelaTesteDados />} />
+            <Route path="*" element={<Navigate to="/mapa" replace />} />
+          </Route>
+        </Routes>
+      </HashRouter>
     </QueryProvider>
   )
 }

@@ -2,15 +2,19 @@ import { useEffect, useState } from 'react'
 import { Button } from '../../components/Button'
 import { Input } from '../../components/Input'
 import { Modal } from '../../components/Modal'
-import { useCriarFuncionario } from './useFuncionarios'
+import { useAtualizarFuncionario, useCriarFuncionario, type Funcionario } from './useFuncionarios'
 
 interface Props {
   aberto: boolean
+  funcionario: Funcionario | null // null = novo; preenchido = editar nome
   aoFechar: () => void
 }
 
-export function FormFuncionario({ aberto, aoFechar }: Props) {
+export function FormFuncionario({ aberto, funcionario, aoFechar }: Props) {
   const criar = useCriarFuncionario()
+  const atualizar = useAtualizarFuncionario()
+  const editando = funcionario !== null
+
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
@@ -19,19 +23,24 @@ export function FormFuncionario({ aberto, aoFechar }: Props) {
 
   useEffect(() => {
     if (!aberto) return
-    setNome('')
+    setNome(funcionario?.nome ?? '')
     setEmail('')
     setSenha('')
     setErro(null)
     setSucesso(false)
-  }, [aberto])
+  }, [aberto, funcionario])
 
   async function salvar(evento: React.FormEvent) {
     evento.preventDefault()
     setErro(null)
     try {
-      await criar.mutateAsync({ nome, email, senha })
-      setSucesso(true)
+      if (editando) {
+        await atualizar.mutateAsync({ id: funcionario.id, nome })
+        aoFechar()
+      } else {
+        await criar.mutateAsync({ nome, email, senha })
+        setSucesso(true)
+      }
     } catch (e) {
       const mensagem = (e as { message?: string })?.message ?? ''
       if (mensagem.includes('already registered') || mensagem.includes('already been registered')) {
@@ -39,7 +48,7 @@ export function FormFuncionario({ aberto, aoFechar }: Props) {
       } else if (mensagem.includes('Password')) {
         setErro('Senha muito curta — use pelo menos 6 caracteres.')
       } else {
-        setErro('Não foi possível criar o funcionário. Tente de novo.')
+        setErro('Não foi possível salvar. Tente de novo.')
       }
     }
   }
@@ -49,8 +58,8 @@ export function FormFuncionario({ aberto, aoFechar }: Props) {
       <Modal aberto={aberto} titulo="Funcionário criado" aoFechar={aoFechar}>
         <div className="flex flex-col gap-3">
           <p className="text-sm text-slate-600">
-            <strong>{nome}</strong> foi criado. Peça para conferir o e-mail (
-            <strong>{email}</strong>) e confirmar o cadastro antes de fazer o primeiro login.
+            <strong>{nome}</strong> foi criado como <strong>inativo</strong>. Peça para conferir o
+            e-mail (<strong>{email}</strong>) e confirmar o cadastro; depois ative-o aqui na lista.
           </p>
           <Button onClick={aoFechar}>Ok</Button>
         </div>
@@ -58,33 +67,49 @@ export function FormFuncionario({ aberto, aoFechar }: Props) {
     )
   }
 
+  const salvando = criar.isPending || atualizar.isPending
+
   return (
-    <Modal aberto={aberto} titulo="Novo funcionário" aoFechar={aoFechar}>
+    <Modal
+      aberto={aberto}
+      titulo={editando ? 'Editar funcionário' : 'Novo funcionário'}
+      aoFechar={aoFechar}
+    >
       <form onSubmit={salvar} className="flex flex-col gap-3">
         <Input rotulo="Nome" required value={nome} onChange={(e) => setNome(e.target.value)} />
-        <Input
-          rotulo="E-mail"
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <Input
-          rotulo="Senha inicial"
-          type="password"
-          required
-          minLength={6}
-          placeholder="mínimo 6 caracteres"
-          value={senha}
-          onChange={(e) => setSenha(e.target.value)}
-        />
+        {!editando && (
+          <>
+            <Input
+              rotulo="E-mail"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <Input
+              rotulo="Senha inicial"
+              type="password"
+              required
+              minLength={6}
+              placeholder="mínimo 6 caracteres"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+            />
+          </>
+        )}
+        {editando && (
+          <p className="text-xs text-slate-400">
+            O e-mail de login não é editável por aqui. Para trocar a senha, use “Resetar senha” na
+            lista.
+          </p>
+        )}
         {erro && (
           <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
             {erro}
           </p>
         )}
-        <Button type="submit" disabled={criar.isPending}>
-          {criar.isPending ? 'Criando…' : 'Criar funcionário'}
+        <Button type="submit" disabled={salvando}>
+          {salvando ? 'Salvando…' : editando ? 'Salvar' : 'Criar funcionário'}
         </Button>
       </form>
     </Modal>

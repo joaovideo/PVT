@@ -6,6 +6,7 @@ export interface Funcionario {
   id: string
   nome: string
   ativo: boolean
+  admin: boolean
 }
 
 interface EstadoAuth {
@@ -37,7 +38,7 @@ export function useFuncionarioAtual() {
       setEstado({
         carregando: false,
         session: {} as Session,
-        funcionario: { id: 'dev', nome: 'Dev (sem auth)', ativo: true },
+        funcionario: { id: 'dev', nome: 'Dev (sem auth)', ativo: true, admin: true },
       })
       return
     }
@@ -49,12 +50,17 @@ export function useFuncionarioAtual() {
         if (montado) setEstado({ carregando: false, session: null, funcionario: null })
         return
       }
+      // select('*') (não colunas nomeadas) para o login não quebrar caso a
+      // migration 0009 — que adiciona `admin` — ainda não tenha sido aplicada.
       const { data } = await supabase
         .from('funcionarios')
-        .select('id, nome, ativo')
+        .select('*')
         .eq('id', session.user.id)
         .maybeSingle()
-      if (montado) setEstado({ carregando: false, session, funcionario: data })
+      const funcionario: Funcionario | null = data
+        ? { id: data.id, nome: data.nome, ativo: data.ativo, admin: data.admin ?? false }
+        : null
+      if (montado) setEstado({ carregando: false, session, funcionario })
     }
 
     supabase.auth.getSession().then(({ data }) => carregar(data.session))

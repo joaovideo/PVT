@@ -56,6 +56,9 @@ export function useMapaQuartos(inicio: string, dias: number) {
       for (const quarto of quartosRes.data) grade.set(quarto.id, new Map())
 
       for (const seg of segmentosRes.data) {
+        // quarto_id pode ser null se o quarto foi apagado (0009); sem linha
+        // na grade, o segmento histórico não aparece no mapa.
+        if (seg.quarto_id === null) continue
         const diasSeg = diasEntre(
           seg.data_inicio > inicio ? seg.data_inicio : inicio,
           seg.data_fim < fim ? seg.data_fim : fim,
@@ -74,6 +77,7 @@ export function useMapaQuartos(inicio: string, dias: number) {
       // Bloqueio tem prioridade visual (sobrescreve reserva na mesma célula,
       // caso raro em que um bloqueio foi criado sobre um período já reservado).
       for (const bloqueio of bloqueiosRes.data) {
+        if (bloqueio.quarto_id === null) continue
         const diasB = diasEntre(
           bloqueio.data_inicio > inicio ? bloqueio.data_inicio : inicio,
           bloqueio.data_fim < fim ? bloqueio.data_fim : fim,
