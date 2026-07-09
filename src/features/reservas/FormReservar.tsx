@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '../../components/Button'
 import { Input } from '../../components/Input'
 import { Modal } from '../../components/Modal'
@@ -40,6 +41,7 @@ export function FormReservar({
   aoFechar,
 }: Props) {
   const criar = useCriarReserva()
+  const navigate = useNavigate()
 
   const [buscaHospede, setBuscaHospede] = useState('')
   const [hospedeEscolhido, setHospedeEscolhido] = useState<Hospede | null>(null)
@@ -78,7 +80,7 @@ export function FormReservar({
       return
     }
     try {
-      await criar.mutateAsync({
+      const reservaId = await criar.mutateAsync({
         hospedeId: hospedeEscolhido?.id ?? null,
         hospedeNome: hospedeEscolhido?.nome ?? hospedeNovoNome.trim(),
         hospedeTelefone: hospedeEscolhido?.telefone ?? hospedeNovoTelefone.trim(),
@@ -94,6 +96,7 @@ export function FormReservar({
         sinalMetodo: deuSinal ? sinalMetodo : null,
       })
       aoFechar()
+      navigate(`/reservas/${reservaId}`)
     } catch (e) {
       const codigo = (e as { code?: string })?.code
       if (codigo === '23P01') {
