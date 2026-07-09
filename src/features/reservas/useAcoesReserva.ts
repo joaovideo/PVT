@@ -4,6 +4,9 @@ import { supabase } from '../../lib/supabaseClient'
 function invalidarDetalhe(queryClient: ReturnType<typeof useQueryClient>, reservaId: number) {
   queryClient.invalidateQueries({ queryKey: ['reserva-detalhe', reservaId] })
   queryClient.invalidateQueries({ queryKey: ['quartos-disponiveis'] })
+  queryClient.invalidateQueries({ queryKey: ['reservas-lista'] })
+  // Situação financeira e status mudam a cor da célula no Mapa (Issue #33)
+  queryClient.invalidateQueries({ queryKey: ['mapa-quartos'] })
 }
 
 interface LancarDespesaInput {

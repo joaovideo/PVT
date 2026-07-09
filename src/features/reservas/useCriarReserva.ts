@@ -45,6 +45,7 @@ export function useCriarReserva() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quartos-disponiveis'] })
       queryClient.invalidateQueries({ queryKey: ['reservas-lista'] })
+      queryClient.invalidateQueries({ queryKey: ['mapa-quartos'] })
     },
   })
 }
