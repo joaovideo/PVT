@@ -205,7 +205,9 @@ left join despesas d on d.reserva_id = r.id;
 
 **Histórico (log de atividades).** Na tela da reserva, uma linha do tempo simples e legível de tudo que aconteceu e **qual funcionário fez**: "Ana criou a reserva (nível normal)", "Bruno lançou 2× caldo — R$ 30,00", "Ana recebeu R$ 500,00 via pix", "Bruno fez o check-in". Alimentada automaticamente por triggers na tabela `reserva_eventos` — o funcionário não precisa preencher nada. Append-only: eventos não podem ser editados nem apagados.
 
-**Chegadas do dia.** Lista das reservas com check-in hoje, ordenada por hora prevista de chegada — a tela que a recepção deixa aberta.
+**Chegadas e saídas do dia.** Duas listas na mesma aba, a tela que a recepção deixa aberta. **Chegadas:** reservas com check-in hoje, ordenadas por hora prevista de chegada. **Saídas:** reservas com check-out hoje, mostrando quem **já fez check-out (com a hora)** e quem ainda não — check-out feito significa quarto liberado para arrumação.
+
+**Avisos em tempo real.** Via Supabase Realtime (canal em `reserva_eventos`), todos os funcionários com o app aberto são notificados na hora, sem recarregar: **cancelamento de reserva** ("Quarto 3 liberou de 10–13/07 — cancelada por Ana") e **check-out realizado** ("Quarto 5 fez check-out — pode arrumar"). Um sino no cabeçalho acumula os avisos recentes para quem abriu o app depois. Notificação push com o app fechado fica para a fase PWA (Sprint 5).
 
 **Administração.** CRUD completo de quartos (**criar, editar configuração de camas/capacidade e excluir/desativar**), tarifas (**editar os três níveis de valor por ocupação**) e funcionários (apenas perfil admin). Inclui **bloquear/desbloquear quarto por período** com motivo (reforma, manutenção).
 
