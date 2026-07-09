@@ -3,7 +3,7 @@ import { Button } from '../../components/Button'
 import { Input } from '../../components/Input'
 import { Select } from '../../components/Select'
 import { formatarMoeda } from '../../lib/formatadores'
-import { numeroDeDiarias, type Periodo } from '../../lib/periodos'
+import { hoje, numeroDeDiarias, type Periodo } from '../../lib/periodos'
 import { calcularEstadia, type NivelPreco } from '../../lib/precos'
 import { useConfigPousada } from '../admin/useConfigPousada'
 import { useQuartosDisponiveis } from '../disponibilidade/useQuartosDisponiveis'
@@ -15,10 +15,6 @@ const NIVEIS: { chave: NivelPreco; rotulo: string }[] = [
   { chave: 'normal', rotulo: 'Normal' },
   { chave: 'full', rotulo: 'Full' },
 ]
-
-function hoje(): string {
-  return new Date().toISOString().slice(0, 10)
-}
 
 export function TelaOrcamento() {
   const config = useConfigPousada()

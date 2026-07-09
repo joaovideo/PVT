@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useFuncionarioAtual } from '../features/auth/useFuncionarioAtual'
+import { SinoAvisos } from '../features/avisos/SinoAvisos'
 
 const abas = [
   {
@@ -76,6 +77,7 @@ export function AppShell() {
         <span className="text-lg font-bold text-marca">PVT</span>
         <div className="flex items-center gap-1">
           <span className="text-sm text-slate-600">{funcionario?.nome}</span>
+          <SinoAvisos />
           <button onClick={sair} className="min-h-11 px-2 text-sm font-medium text-slate-500">
             Sair
           </button>
