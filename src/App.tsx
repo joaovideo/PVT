@@ -4,6 +4,7 @@ import { AppShell } from './components/AppShell'
 import { PaginaPlaceholder } from './components/PaginaPlaceholder'
 import { QueryProvider } from './lib/QueryProvider'
 import { TelaTesteDados } from './features/reservas/TelaTesteDados'
+import { TelaChegadas } from './features/reservas/TelaChegadas'
 import { TelaOrcamento } from './features/reservas/TelaOrcamento'
 import { TelaListaReservas } from './features/reservas/TelaListaReservas'
 import { TelaReservaDetalhe } from './features/reservas/TelaReservaDetalhe'
@@ -19,7 +20,7 @@ function App() {
             <Route element={<AppShell />}>
               <Route path="/" element={<Navigate to="/mapa" replace />} />
               <Route path="/mapa" element={<PaginaPlaceholder titulo="Mapa de quartos" />} />
-              <Route path="/chegadas" element={<PaginaPlaceholder titulo="Chegadas do dia" />} />
+              <Route path="/chegadas" element={<TelaChegadas />} />
               <Route path="/reservas" element={<TelaListaReservas />} />
               <Route path="/reservas/nova" element={<TelaOrcamento />} />
               <Route path="/reservas/:id" element={<TelaReservaDetalhe />} />
