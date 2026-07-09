@@ -193,18 +193,21 @@ export type Database = {
       itens_extras_catalogo: {
         Row: {
           ativo: boolean
+          categoria: string
           id: number
           nome: string
           valor_unitario: number
         }
         Insert: {
           ativo?: boolean
+          categoria?: string
           id?: number
           nome: string
           valor_unitario: number
         }
         Update: {
           ativo?: boolean
+          categoria?: string
           id?: number
           nome?: string
           valor_unitario?: number

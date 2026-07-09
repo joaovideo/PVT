@@ -4,29 +4,24 @@ import { Button } from '../../components/Button'
 import { useQuartos, type Quarto } from '../quartos/useQuartos'
 import { useQuartosAdmin } from '../quartos/useQuartosAdmin'
 import { useBloqueios, useBloqueiosAdmin } from './useBloqueios'
-import { formatarData, formatarMoeda, reaisParaCentavos } from '../../lib/formatadores'
+import { formatarData } from '../../lib/formatadores'
 import { FormQuarto } from './FormQuarto'
 import { FormBloqueio } from './FormBloqueio'
-import { FormItemExtra } from './FormItemExtra'
 import { SecaoValores } from './SecaoValores'
 import { SecaoFuncionarios } from './SecaoFuncionarios'
-import { useItensExtras, useItensExtrasAdmin, type ItemExtra } from './useItensExtras'
+import { SecaoItensExtras } from './SecaoItensExtras'
 import { useFuncionarioAtual } from '../auth/useFuncionarioAtual'
 
 export function TelaAdmin() {
   const quartos = useQuartos()
   const bloqueios = useBloqueios()
-  const itensExtras = useItensExtras()
   const { apagar: apagarQuarto } = useQuartosAdmin()
-  const { apagar: apagarItem } = useItensExtrasAdmin()
   const { funcionario: eu } = useFuncionarioAtual()
   const { excluir: desbloquear } = useBloqueiosAdmin()
 
   const [modalQuarto, setModalQuarto] = useState<{ quarto: Quarto | null } | null>(null)
   const [modalBloqueio, setModalBloqueio] = useState(false)
-  const [modalItem, setModalItem] = useState<{ item: ItemExtra | null } | null>(null)
   const [confirmarQuarto, setConfirmarQuarto] = useState<number | null>(null)
-  const [confirmarItem, setConfirmarItem] = useState<number | null>(null)
 
   const ehAdmin = eu?.admin === true
 
@@ -157,77 +152,7 @@ export function TelaAdmin() {
         </ul>
       </section>
 
-      {ehAdmin && (
-        <section>
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-800">Itens extras</h2>
-            <Button variante="secundario" onClick={() => setModalItem({ item: null })}>
-              + Novo item
-            </Button>
-          </div>
-          <ul className="flex flex-col gap-2">
-            {itensExtras.data?.map((item) => (
-              <li key={item.id} className="rounded-lg bg-white p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <p className="font-semibold text-slate-800">
-                      {item.nome}
-                      {!item.ativo && (
-                        <span className="ml-2 align-middle">
-                          <Badge variante="nao_pago">Fora do cardápio</Badge>
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-sm text-slate-500">
-                      {formatarMoeda(reaisParaCentavos(item.valor_unitario))}
-                    </p>
-                  </div>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => setModalItem({ item })}
-                      className="min-h-11 rounded-lg px-3 text-sm font-medium text-slate-600 active:bg-slate-100"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => setConfirmarItem(item.id)}
-                      className="min-h-11 rounded-lg px-3 text-sm font-medium text-red-600 active:bg-red-50"
-                    >
-                      Apagar
-                    </button>
-                  </div>
-                </div>
-                {confirmarItem === item.id && (
-                  <div className="mt-2 flex flex-col gap-2 rounded-lg bg-red-50 p-2 text-sm">
-                    <p className="text-red-700">
-                      Apagar <strong>{item.nome}</strong> do cardápio? Despesas já lançadas não são
-                      afetadas.
-                    </p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={async () => {
-                          await apagarItem.mutateAsync(item.id)
-                          setConfirmarItem(null)
-                        }}
-                        disabled={apagarItem.isPending}
-                        className="min-h-9 rounded-lg bg-red-600 px-3 font-medium text-white active:bg-red-700"
-                      >
-                        {apagarItem.isPending ? 'Apagando…' : 'Apagar'}
-                      </button>
-                      <button
-                        onClick={() => setConfirmarItem(null)}
-                        className="min-h-9 rounded-lg px-3 font-medium text-slate-600"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      {ehAdmin && <SecaoItensExtras />}
 
       {ehAdmin && <SecaoFuncionarios />}
 
@@ -235,11 +160,6 @@ export function TelaAdmin() {
         aberto={modalQuarto !== null}
         quarto={modalQuarto?.quarto ?? null}
         aoFechar={() => setModalQuarto(null)}
-      />
-      <FormItemExtra
-        aberto={modalItem !== null}
-        item={modalItem?.item ?? null}
-        aoFechar={() => setModalItem(null)}
       />
       <FormBloqueio
         aberto={modalBloqueio}
