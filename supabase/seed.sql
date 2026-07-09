@@ -35,14 +35,15 @@ insert into quartos (nome, camas_casal, camas_solteiro, capacidade_max, observac
   ('Quarto 5 — Orquídea',  1, 0, 2, 'Varanda com rede'),
   ('Quarto 6 — Primavera', 2, 1, 5, 'Suíte master');
 
--- Tarifas: 1 pessoa / casal / casal + 1 criança
-insert into tarifas (quarto_id, adultos, criancas, valor_diaria) values
-  (1, 1, 0, 180.00), (1, 2, 0, 260.00), (1, 2, 1, 310.00),
-  (2, 1, 0, 200.00), (2, 2, 0, 290.00), (2, 2, 1, 340.00),
-  (3, 1, 0, 170.00), (3, 2, 0, 240.00), (3, 2, 1, 290.00),
-  (4, 1, 0, 220.00), (4, 2, 0, 320.00), (4, 2, 1, 380.00),
-  (5, 1, 0, 190.00), (5, 2, 0, 280.00), (5, 2, 1, 330.00),
-  (6, 1, 0, 260.00), (6, 2, 0, 380.00), (6, 2, 1, 450.00);
+-- Tarifas por quarto e nº de adultos, em 3 níveis (desconto/normal/full).
+-- Criança soma o valor da config_pousada (criada na migration 0005).
+insert into tarifas (quarto_id, adultos, valor_desconto, valor_normal, valor_full) values
+  (1, 1, 160.00, 180.00, 220.00), (1, 2, 230.00, 260.00, 310.00),
+  (2, 1, 180.00, 200.00, 240.00), (2, 2, 260.00, 290.00, 350.00), (2, 3, 310.00, 345.00, 415.00),
+  (3, 1, 150.00, 170.00, 200.00), (3, 2, 215.00, 240.00, 290.00),
+  (4, 1, 200.00, 220.00, 265.00), (4, 2, 290.00, 320.00, 385.00), (4, 3, 340.00, 380.00, 455.00), (4, 4, 390.00, 435.00, 520.00),
+  (5, 1, 170.00, 190.00, 230.00), (5, 2, 250.00, 280.00, 335.00),
+  (6, 1, 235.00, 260.00, 310.00), (6, 2, 340.00, 380.00, 455.00), (6, 3, 405.00, 450.00, 540.00), (6, 4, 460.00, 510.00, 610.00), (6, 5, 510.00, 565.00, 680.00);
 
 -- 3 hóspedes
 insert into hospedes (nome, telefone, email, documento) values
@@ -60,10 +61,11 @@ insert into reserva_segmentos (reserva_id, quarto_id, data_inicio, data_fim) val
 insert into pagamentos (reserva_id, valor, metodo, recebido_por) values
   (1, 780.00, 'pix', '11111111-1111-1111-1111-111111111111');
 
--- Reserva 2 — PARCIAL: Maria, Quarto 4, casal + 1 criança, 3 diárias × 380 = 1140
+-- Reserva 2 — PARCIAL: Maria, Quarto 4, casal + 1 criança,
+-- 3 diárias × (320 casal + 50 criança) = 1110
 insert into reservas (hospede_id, data_checkin, data_checkout, hora_chegada_prevista,
                       adultos, criancas, valor_total, status, criada_por) values
-  (2, '2026-07-15', '2026-07-18', '16:30', 2, 1, 1140.00, 'confirmada',
+  (2, '2026-07-15', '2026-07-18', '16:30', 2, 1, 1110.00, 'confirmada',
    '11111111-1111-1111-1111-111111111111');
 insert into reserva_segmentos (reserva_id, quarto_id, data_inicio, data_fim) values
   (2, 4, '2026-07-15', '2026-07-18');
@@ -89,3 +91,13 @@ insert into reserva_segmentos (reserva_id, quarto_id, data_inicio, data_fim) val
   (4, 5, '2026-07-26', '2026-07-29');
 insert into pagamentos (reserva_id, valor, metodo, recebido_por, observacao) values
   (4, 700.00, 'transferencia', '22222222-2222-2222-2222-222222222222', 'Sinal 50%');
+
+-- Despesas extras de exemplo (consumo na conta)
+insert into despesas_extras (reserva_id, descricao, quantidade, valor_unitario, lancada_por) values
+  (1, 'Caldo verde', 2, 15.00, '22222222-2222-2222-2222-222222222222'),
+  (2, 'Refrigerante lata', 1, 8.00, '11111111-1111-1111-1111-111111111111');
+
+-- Bloqueio de exemplo: Quarto 6 em manutenção
+insert into bloqueios (quarto_id, data_inicio, data_fim, motivo, criado_por) values
+  (6, '2026-08-10', '2026-08-15', 'Manutenção do ar-condicionado',
+   '11111111-1111-1111-1111-111111111111');

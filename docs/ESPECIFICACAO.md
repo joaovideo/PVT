@@ -59,18 +59,29 @@ create table quartos (
   ativo boolean not null default true
 );
 
--- Tarifas por tipo de ocupação, com três níveis de preço.
+-- Tarifas por quarto e nº de ADULTOS, com três níveis de preço.
 -- O funcionário escolhe o nível na reserva: desconto (mínimo autorizado),
 -- normal (padrão) ou full (alta temporada/feriado). Valores editáveis no Admin.
 create table tarifas (
   id serial primary key,
   quarto_id int not null references quartos(id),
   adultos int not null,            -- 1 = solteiro, 2 = casal...
-  criancas int not null default 0, -- casal + criança etc.
   valor_desconto numeric(10,2) not null,
   valor_normal numeric(10,2) not null,
   valor_full numeric(10,2) not null,
-  unique (quarto_id, adultos, criancas)
+  unique (quarto_id, adultos)
+);
+
+-- Configuração única da pousada: valor por CRIANÇA (até a idade limite),
+-- também em três níveis, somado à tarifa do quarto. Editável no Admin.
+-- Diária = tarifa(quarto, adultos)[nível] + nº de crianças × valor_crianca[nível].
+-- Quem passa da idade limite conta como adulto.
+create table config_pousada (
+  id int primary key default 1 check (id = 1),  -- linha única
+  crianca_valor_desconto numeric(10,2) not null,
+  crianca_valor_normal numeric(10,2) not null,
+  crianca_valor_full numeric(10,2) not null,
+  crianca_idade_max int not null default 12
 );
 
 -- Bloqueios de quarto (reforma, manutenção): o período fica indisponível
@@ -209,7 +220,7 @@ left join despesas d on d.reserva_id = r.id;
 
 **Avisos em tempo real.** Via Supabase Realtime (canal em `reserva_eventos`), todos os funcionários com o app aberto são notificados na hora, sem recarregar: **cancelamento de reserva** ("Quarto 3 liberou de 10–13/07 — cancelada por Ana") e **check-out realizado** ("Quarto 5 fez check-out — pode arrumar"). Um sino no cabeçalho acumula os avisos recentes para quem abriu o app depois. Notificação push com o app fechado fica para a fase PWA (Sprint 5).
 
-**Administração.** CRUD completo de quartos (**criar, editar configuração de camas/capacidade e excluir/desativar**), tarifas (**editar os três níveis de valor por ocupação**) e funcionários (apenas perfil admin). Inclui **bloquear/desbloquear quarto por período** com motivo (reforma, manutenção).
+**Administração.** CRUD completo de quartos (**criar, editar configuração de camas/capacidade e excluir/desativar**), tarifas (**editar os três níveis de valor por nº de adultos e o valor por criança até 12 anos, também em três níveis**) e funcionários (apenas perfil admin). Inclui **bloquear/desbloquear quarto por período** com motivo (reforma, manutenção).
 
 ## 5. Motor de sugestão de combinação de quartos
 

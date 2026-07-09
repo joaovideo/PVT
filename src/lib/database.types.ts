@@ -3,6 +3,127 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   public: {
     Tables: {
+      bloqueios: {
+        Row: {
+          criado_em: string
+          criado_por: string
+          data_fim: string
+          data_inicio: string
+          id: number
+          motivo: string
+          quarto_id: number
+        }
+        Insert: {
+          criado_em?: string
+          criado_por: string
+          data_fim: string
+          data_inicio: string
+          id?: number
+          motivo: string
+          quarto_id: number
+        }
+        Update: {
+          criado_em?: string
+          criado_por?: string
+          data_fim?: string
+          data_inicio?: string
+          id?: number
+          motivo?: string
+          quarto_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'bloqueios_criado_por_fkey'
+            columns: ['criado_por']
+            isOneToOne: false
+            referencedRelation: 'funcionarios'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'bloqueios_quarto_id_fkey'
+            columns: ['quarto_id']
+            isOneToOne: false
+            referencedRelation: 'quartos'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      config_pousada: {
+        Row: {
+          crianca_idade_max: number
+          crianca_valor_desconto: number
+          crianca_valor_full: number
+          crianca_valor_normal: number
+          id: number
+        }
+        Insert: {
+          crianca_idade_max?: number
+          crianca_valor_desconto: number
+          crianca_valor_full: number
+          crianca_valor_normal: number
+          id?: number
+        }
+        Update: {
+          crianca_idade_max?: number
+          crianca_valor_desconto?: number
+          crianca_valor_full?: number
+          crianca_valor_normal?: number
+          id?: number
+        }
+        Relationships: []
+      }
+      despesas_extras: {
+        Row: {
+          descricao: string
+          id: number
+          lancada_em: string
+          lancada_por: string
+          quantidade: number
+          reserva_id: number
+          valor_unitario: number
+        }
+        Insert: {
+          descricao: string
+          id?: number
+          lancada_em?: string
+          lancada_por: string
+          quantidade?: number
+          reserva_id: number
+          valor_unitario: number
+        }
+        Update: {
+          descricao?: string
+          id?: number
+          lancada_em?: string
+          lancada_por?: string
+          quantidade?: number
+          reserva_id?: number
+          valor_unitario?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'despesas_extras_lancada_por_fkey'
+            columns: ['lancada_por']
+            isOneToOne: false
+            referencedRelation: 'funcionarios'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'despesas_extras_reserva_id_fkey'
+            columns: ['reserva_id']
+            isOneToOne: false
+            referencedRelation: 'reservas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'despesas_extras_reserva_id_fkey'
+            columns: ['reserva_id']
+            isOneToOne: false
+            referencedRelation: 'reservas_financeiro'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       funcionarios: {
         Row: {
           ativo: boolean
@@ -127,6 +248,55 @@ export type Database = {
         }
         Relationships: []
       }
+      reserva_eventos: {
+        Row: {
+          descricao: string
+          funcionario_id: string | null
+          id: number
+          ocorrido_em: string
+          reserva_id: number
+          tipo: string
+        }
+        Insert: {
+          descricao: string
+          funcionario_id?: string | null
+          id?: number
+          ocorrido_em?: string
+          reserva_id: number
+          tipo: string
+        }
+        Update: {
+          descricao?: string
+          funcionario_id?: string | null
+          id?: number
+          ocorrido_em?: string
+          reserva_id?: number
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'reserva_eventos_funcionario_id_fkey'
+            columns: ['funcionario_id']
+            isOneToOne: false
+            referencedRelation: 'funcionarios'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'reserva_eventos_reserva_id_fkey'
+            columns: ['reserva_id']
+            isOneToOne: false
+            referencedRelation: 'reservas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'reserva_eventos_reserva_id_fkey'
+            columns: ['reserva_id']
+            isOneToOne: false
+            referencedRelation: 'reservas_financeiro'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       reserva_segmentos: {
         Row: {
           cancelado: boolean
@@ -187,6 +357,7 @@ export type Database = {
           hora_chegada_prevista: string | null
           hospede_id: number
           id: number
+          nivel_preco: string
           observacoes: string | null
           status: string
           valor_total: number
@@ -201,6 +372,7 @@ export type Database = {
           hora_chegada_prevista?: string | null
           hospede_id: number
           id?: number
+          nivel_preco?: string
           observacoes?: string | null
           status?: string
           valor_total: number
@@ -215,6 +387,7 @@ export type Database = {
           hora_chegada_prevista?: string | null
           hospede_id?: number
           id?: number
+          nivel_preco?: string
           observacoes?: string | null
           status?: string
           valor_total?: number
@@ -239,24 +412,27 @@ export type Database = {
       tarifas: {
         Row: {
           adultos: number
-          criancas: number
           id: number
           quarto_id: number
-          valor_diaria: number
+          valor_desconto: number
+          valor_full: number
+          valor_normal: number
         }
         Insert: {
           adultos: number
-          criancas?: number
           id?: number
           quarto_id: number
-          valor_diaria: number
+          valor_desconto: number
+          valor_full: number
+          valor_normal: number
         }
         Update: {
           adultos?: number
-          criancas?: number
           id?: number
           quarto_id?: number
-          valor_diaria?: number
+          valor_desconto?: number
+          valor_full?: number
+          valor_normal?: number
         }
         Relationships: [
           {
@@ -274,13 +450,16 @@ export type Database = {
         Row: {
           id: number | null
           situacao: string | null
+          total_despesas: number | null
           total_pago: number | null
+          valor_final: number | null
           valor_total: number | null
         }
         Relationships: []
       }
     }
     Functions: {
+      formatar_brl: { Args: { v: number }; Returns: string }
       funcionario_ativo: { Args: never; Returns: boolean }
     }
     Enums: {
