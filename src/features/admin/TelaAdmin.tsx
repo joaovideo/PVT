@@ -2,22 +2,18 @@ import { useState } from 'react'
 import { Badge } from '../../components/Badge'
 import { Button } from '../../components/Button'
 import { useQuartos, type Quarto } from '../quartos/useQuartos'
-import { useTodasTarifas } from '../quartos/useTarifas'
 import { useBloqueios, useBloqueiosAdmin } from './useBloqueios'
-import { formatarData, formatarMoeda, reaisParaCentavos } from '../../lib/formatadores'
+import { formatarData } from '../../lib/formatadores'
 import { FormQuarto } from './FormQuarto'
-import { FormTarifas } from './FormTarifas'
 import { FormBloqueio } from './FormBloqueio'
-import { SecaoConfigCrianca } from './SecaoConfigCrianca'
+import { SecaoValores } from './SecaoValores'
 
 export function TelaAdmin() {
   const quartos = useQuartos()
-  const tarifas = useTodasTarifas()
   const bloqueios = useBloqueios()
   const { excluir: desbloquear } = useBloqueiosAdmin()
 
   const [modalQuarto, setModalQuarto] = useState<{ quarto: Quarto | null } | null>(null)
-  const [modalTarifas, setModalTarifas] = useState<Quarto | null>(null)
   const [modalBloqueio, setModalBloqueio] = useState(false)
 
   if (quartos.isLoading) return <p className="p-4 text-slate-500">Carregando…</p>
@@ -33,16 +29,17 @@ export function TelaAdmin() {
   return (
     <div className="flex flex-col gap-6 p-4">
       <section>
-        <div className="mb-1 flex items-center justify-between">
-          <h1 className="text-lg font-bold text-slate-800">Quartos e tarifas</h1>
+        <h1 className="mb-2 text-lg font-bold text-slate-800">Valores da diária</h1>
+        <SecaoValores />
+      </section>
+
+      <section>
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-800">Quartos</h2>
           <Button variante="secundario" onClick={() => setModalQuarto({ quarto: null })}>
             + Novo quarto
           </Button>
         </div>
-        <p className="mb-2 text-sm text-slate-500">
-          O preço mostrado é o nível <strong>normal</strong> por nº de adultos. Toque em “Tarifas”
-          para editar os três níveis (desconto/normal/full).
-        </p>
         <ul className="flex flex-col gap-2">
           {quartos.data?.map((quarto) => (
             <li key={quarto.id} className="rounded-lg bg-white p-3">
@@ -60,43 +57,17 @@ export function TelaAdmin() {
                     {quarto.camas_casal} casal · {quarto.camas_solteiro} solteiro · até{' '}
                     {quarto.capacidade_max} pessoas
                   </p>
-                  <p className="mt-1 text-sm text-slate-600">
-                    {(() => {
-                      const doQuarto = tarifas.data?.get(quarto.id) ?? []
-                      if (doQuarto.length === 0)
-                        return <span className="text-amber-700">Tarifas não cadastradas</span>
-                      return doQuarto.map((t) => (
-                        <span key={t.adultos} className="mr-2 inline-block whitespace-nowrap">
-                          {t.adultos} ad.:{' '}
-                          <strong>{formatarMoeda(reaisParaCentavos(t.valor_normal))}</strong>
-                        </span>
-                      ))
-                    })()}
-                  </p>
                 </div>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => setModalQuarto({ quarto })}
-                    className="min-h-11 rounded-lg px-3 text-sm font-medium text-slate-600 active:bg-slate-100"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => setModalTarifas(quarto)}
-                    className="min-h-11 rounded-lg px-3 text-sm font-medium text-slate-600 active:bg-slate-100"
-                  >
-                    Tarifas
-                  </button>
-                </div>
+                <button
+                  onClick={() => setModalQuarto({ quarto })}
+                  className="min-h-11 rounded-lg px-3 text-sm font-medium text-slate-600 active:bg-slate-100"
+                >
+                  Editar
+                </button>
               </div>
             </li>
           ))}
         </ul>
-      </section>
-
-      <section>
-        <h2 className="mb-2 text-lg font-bold text-slate-800">Criança (até 12 anos)</h2>
-        <SecaoConfigCrianca />
       </section>
 
       <section>
@@ -138,11 +109,6 @@ export function TelaAdmin() {
         aberto={modalQuarto !== null}
         quarto={modalQuarto?.quarto ?? null}
         aoFechar={() => setModalQuarto(null)}
-      />
-      <FormTarifas
-        aberto={modalTarifas !== null}
-        quarto={modalTarifas}
-        aoFechar={() => setModalTarifas(null)}
       />
       <FormBloqueio
         aberto={modalBloqueio}

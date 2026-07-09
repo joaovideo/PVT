@@ -35,15 +35,12 @@ insert into quartos (nome, camas_casal, camas_solteiro, capacidade_max, observac
   ('Quarto 5 — Orquídea',  1, 0, 2, 'Varanda com rede'),
   ('Quarto 6 — Primavera', 2, 1, 5, 'Suíte master');
 
--- Tarifas por quarto e nº de adultos, em 3 níveis (desconto/normal/full).
--- Criança soma o valor da config_pousada (criada na migration 0005).
-insert into tarifas (quarto_id, adultos, valor_desconto, valor_normal, valor_full) values
-  (1, 1, 160.00, 180.00, 220.00), (1, 2, 230.00, 260.00, 310.00),
-  (2, 1, 180.00, 200.00, 240.00), (2, 2, 260.00, 290.00, 350.00), (2, 3, 310.00, 345.00, 415.00),
-  (3, 1, 150.00, 170.00, 200.00), (3, 2, 215.00, 240.00, 290.00),
-  (4, 1, 200.00, 220.00, 265.00), (4, 2, 290.00, 320.00, 385.00), (4, 3, 340.00, 380.00, 455.00), (4, 4, 390.00, 435.00, 520.00),
-  (5, 1, 170.00, 190.00, 230.00), (5, 2, 250.00, 280.00, 335.00),
-  (6, 1, 235.00, 260.00, 310.00), (6, 2, 340.00, 380.00, 455.00), (6, 3, 405.00, 450.00, 540.00), (6, 4, 460.00, 510.00, 610.00), (6, 5, 510.00, 565.00, 680.00);
+-- Preço é global (migration 0006): valor por adulto e por criança na
+-- config_pousada, em 3 níveis. Ajusta os valores de demonstração aqui.
+update config_pousada set
+  adulto_valor_desconto = 100.00, adulto_valor_normal = 120.00, adulto_valor_full = 150.00,
+  crianca_valor_desconto = 40.00, crianca_valor_normal = 50.00, crianca_valor_full = 60.00,
+  crianca_idade_max = 12;
 
 -- 3 hóspedes
 insert into hospedes (nome, telefone, email, documento) values
