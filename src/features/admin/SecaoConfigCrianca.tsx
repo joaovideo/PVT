@@ -46,7 +46,10 @@ export function SecaoConfigCrianca() {
       </p>
       <div className="grid grid-cols-4 gap-2">
         {campos.map((campo) => (
-          <label key={campo.rotulo} className="flex flex-col gap-1 text-xs font-medium text-slate-600">
+          <label
+            key={campo.rotulo}
+            className="flex flex-col gap-1 text-xs font-medium text-slate-600"
+          >
             {campo.rotulo}
             <input
               type="number"
