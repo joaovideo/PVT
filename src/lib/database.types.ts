@@ -50,6 +50,9 @@ export type Database = {
       }
       config_pousada: {
         Row: {
+          adulto_valor_desconto: number
+          adulto_valor_full: number
+          adulto_valor_normal: number
           crianca_idade_max: number
           crianca_valor_desconto: number
           crianca_valor_full: number
@@ -57,6 +60,9 @@ export type Database = {
           id: number
         }
         Insert: {
+          adulto_valor_desconto: number
+          adulto_valor_full: number
+          adulto_valor_normal: number
           crianca_idade_max?: number
           crianca_valor_desconto: number
           crianca_valor_full: number
@@ -64,6 +70,9 @@ export type Database = {
           id?: number
         }
         Update: {
+          adulto_valor_desconto?: number
+          adulto_valor_full?: number
+          adulto_valor_normal?: number
           crianca_idade_max?: number
           crianca_valor_desconto?: number
           crianca_valor_full?: number
@@ -409,41 +418,6 @@ export type Database = {
           },
         ]
       }
-      tarifas: {
-        Row: {
-          adultos: number
-          id: number
-          quarto_id: number
-          valor_desconto: number
-          valor_full: number
-          valor_normal: number
-        }
-        Insert: {
-          adultos: number
-          id?: number
-          quarto_id: number
-          valor_desconto: number
-          valor_full: number
-          valor_normal: number
-        }
-        Update: {
-          adultos?: number
-          id?: number
-          quarto_id?: number
-          valor_desconto?: number
-          valor_full?: number
-          valor_normal?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'tarifas_quarto_id_fkey'
-            columns: ['quarto_id']
-            isOneToOne: false
-            referencedRelation: 'quartos'
-            referencedColumns: ['id']
-          },
-        ]
-      }
     }
     Views: {
       reservas_financeiro: {
@@ -459,8 +433,15 @@ export type Database = {
       }
     }
     Functions: {
+      dearmor: { Args: { '': string }; Returns: string }
       formatar_brl: { Args: { v: number }; Returns: string }
       funcionario_ativo: { Args: never; Returns: boolean }
+      gen_random_uuid: { Args: never; Returns: string }
+      gen_salt: { Args: { '': string }; Returns: string }
+      pgp_armor_headers: {
+        Args: { '': string }
+        Returns: Record<string, unknown>[]
+      }
     }
     Enums: {
       [_ in never]: never
