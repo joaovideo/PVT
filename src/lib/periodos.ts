@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, isBefore, parseISO } from 'date-fns'
+import { addDays, differenceInCalendarDays, format, isBefore, parseISO } from 'date-fns'
 
 /**
  * Período de hospedagem com fim EXCLUSIVO: o dia de `fim` é o checkout,
@@ -30,4 +30,20 @@ export function hoje(): string {
   const mes = String(d.getMonth() + 1).padStart(2, '0')
   const dia = String(d.getDate()).padStart(2, '0')
   return `${ano}-${mes}-${dia}`
+}
+
+/** `dataIso` deslocada em `n` dias (aceita negativo), em yyyy-MM-dd. */
+export function addDiasStr(dataIso: string, n: number): string {
+  return format(addDays(parseISO(dataIso), n), 'yyyy-MM-dd')
+}
+
+/** Lista de dias (yyyy-MM-dd) em [inicioIncl, fimExcl). */
+export function diasEntre(inicioIncl: string, fimExcl: string): string[] {
+  const dias: string[] = []
+  let cursor = inicioIncl
+  while (cursor < fimExcl) {
+    dias.push(cursor)
+    cursor = addDiasStr(cursor, 1)
+  }
+  return dias
 }

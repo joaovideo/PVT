@@ -1,10 +1,10 @@
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthGate } from './features/auth/AuthGate'
 import { AppShell } from './components/AppShell'
-import { PaginaPlaceholder } from './components/PaginaPlaceholder'
 import { QueryProvider } from './lib/QueryProvider'
 import { TelaTesteDados } from './features/reservas/TelaTesteDados'
 import { TelaChegadas } from './features/reservas/TelaChegadas'
+import { TelaMapa } from './features/mapa/TelaMapa'
 import { TelaOrcamento } from './features/reservas/TelaOrcamento'
 import { TelaListaReservas } from './features/reservas/TelaListaReservas'
 import { TelaReservaDetalhe } from './features/reservas/TelaReservaDetalhe'
@@ -19,7 +19,7 @@ function App() {
           <Routes>
             <Route element={<AppShell />}>
               <Route path="/" element={<Navigate to="/mapa" replace />} />
-              <Route path="/mapa" element={<PaginaPlaceholder titulo="Mapa de quartos" />} />
+              <Route path="/mapa" element={<TelaMapa />} />
               <Route path="/chegadas" element={<TelaChegadas />} />
               <Route path="/reservas" element={<TelaListaReservas />} />
               <Route path="/reservas/nova" element={<TelaOrcamento />} />

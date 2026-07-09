@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Button } from '../../components/Button'
 import { Input } from '../../components/Input'
 import { Select } from '../../components/Select'
 import { formatarMoeda } from '../../lib/formatadores'
-import { hoje, numeroDeDiarias, type Periodo } from '../../lib/periodos'
+import { addDiasStr, hoje, numeroDeDiarias, type Periodo } from '../../lib/periodos'
 import { calcularEstadia, type NivelPreco } from '../../lib/precos'
 import { useConfigPousada } from '../admin/useConfigPousada'
 import { useQuartosDisponiveis } from '../disponibilidade/useQuartosDisponiveis'
@@ -16,10 +17,20 @@ const NIVEIS: { chave: NivelPreco; rotulo: string }[] = [
   { chave: 'full', rotulo: 'Full' },
 ]
 
+interface EstadoNavegacao {
+  checkinSugerido?: string
+  quartoIdSugerido?: number
+}
+
 export function TelaOrcamento() {
+  const location = useLocation()
+  const sugestao = (location.state as EstadoNavegacao | null) ?? null
+
   const config = useConfigPousada()
-  const [checkin, setCheckin] = useState(hoje())
-  const [checkout, setCheckout] = useState('')
+  const [checkin, setCheckin] = useState(sugestao?.checkinSugerido ?? hoje())
+  const [checkout, setCheckout] = useState(
+    sugestao?.checkinSugerido ? addDiasStr(sugestao.checkinSugerido, 1) : '',
+  )
   const [adultos, setAdultos] = useState(2)
   const [criancas, setCriancas] = useState(0)
   const [nivel, setNivel] = useState<NivelPreco>('normal')
@@ -119,10 +130,17 @@ export function TelaOrcamento() {
           {disponiveis.data.map((quarto) => (
             <li
               key={quarto.id}
-              className="flex items-center justify-between gap-2 rounded-lg bg-white p-3"
+              className={`flex items-center justify-between gap-2 rounded-lg bg-white p-3 ${
+                quarto.id === sugestao?.quartoIdSugerido ? 'ring-2 ring-marca' : ''
+              }`}
             >
               <div>
-                <p className="font-semibold text-slate-800">{quarto.nome}</p>
+                <p className="font-semibold text-slate-800">
+                  {quarto.nome}
+                  {quarto.id === sugestao?.quartoIdSugerido && (
+                    <span className="ml-2 text-xs font-normal text-marca">tocado no mapa</span>
+                  )}
+                </p>
                 <p className="text-sm text-slate-500">até {quarto.capacidade_max} pessoas</p>
               </div>
               <div className="flex items-center gap-2">

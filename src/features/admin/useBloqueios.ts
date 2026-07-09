@@ -18,7 +18,12 @@ export function useBloqueios() {
 
 export function useBloqueiosAdmin() {
   const queryClient = useQueryClient()
-  const aoMudar = () => queryClient.invalidateQueries({ queryKey: ['bloqueios'] })
+  const aoMudar = () => {
+    queryClient.invalidateQueries({ queryKey: ['bloqueios'] })
+    // 'mapa-quartos' também depende de bloqueios (Issue #33) — invalida
+    // qualquer janela de data já em cache, não só a exibida agora.
+    queryClient.invalidateQueries({ queryKey: ['mapa-quartos'] })
+  }
 
   const criar = useMutation({
     mutationFn: async (bloqueio: TablesInsert<'bloqueios'>) => {
