@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { Button } from '../../components/Button'
 import { Input } from '../../components/Input'
 import { Modal } from '../../components/Modal'
+import { Select } from '../../components/Select'
 import { useItensExtrasAdmin } from './useItensExtras'
 import type { ItemExtra } from './useItensExtras'
+import { CATEGORIAS_ITENS, type CategoriaItem } from './categoriasItens'
 
 interface Props {
   aberto: boolean
@@ -15,6 +17,7 @@ export function FormItemExtra({ aberto, item, aoFechar }: Props) {
   const { criar, atualizar } = useItensExtrasAdmin()
   const [nome, setNome] = useState('')
   const [valor, setValor] = useState('')
+  const [categoria, setCategoria] = useState<CategoriaItem>('Outros')
   const [ativo, setAtivo] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
 
@@ -22,6 +25,7 @@ export function FormItemExtra({ aberto, item, aoFechar }: Props) {
     if (!aberto) return
     setNome(item?.nome ?? '')
     setValor(item ? String(item.valor_unitario) : '')
+    setCategoria((item?.categoria as CategoriaItem) ?? 'Outros')
     setAtivo(item?.ativo ?? true)
     setErro(null)
   }, [aberto, item])
@@ -31,7 +35,7 @@ export function FormItemExtra({ aberto, item, aoFechar }: Props) {
   async function salvar(evento: React.FormEvent) {
     evento.preventDefault()
     setErro(null)
-    const campos = { nome, valor_unitario: Number(valor), ativo }
+    const campos = { nome, valor_unitario: Number(valor), categoria, ativo }
     try {
       if (item) await atualizar.mutateAsync({ id: item.id, ...campos })
       else await criar.mutateAsync(campos)
@@ -45,6 +49,17 @@ export function FormItemExtra({ aberto, item, aoFechar }: Props) {
     <Modal aberto={aberto} titulo={item ? 'Editar item' : 'Novo item extra'} aoFechar={aoFechar}>
       <form onSubmit={salvar} className="flex flex-col gap-3">
         <Input rotulo="Nome" required value={nome} onChange={(e) => setNome(e.target.value)} />
+        <Select
+          rotulo="Categoria"
+          value={categoria}
+          onChange={(e) => setCategoria(e.target.value as CategoriaItem)}
+        >
+          {CATEGORIAS_ITENS.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </Select>
         <Input
           rotulo="Valor unitário (R$)"
           type="number"
