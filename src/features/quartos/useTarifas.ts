@@ -4,6 +4,25 @@ import type { Tables, TablesInsert } from '../../lib/database.types'
 
 export type Tarifa = Tables<'tarifas'>
 
+/** Todas as tarifas de todos os quartos, agrupadas por quarto_id — usado
+ *  para mostrar um resumo de preços na listagem do Admin. */
+export function useTodasTarifas() {
+  return useQuery({
+    queryKey: ['tarifas'],
+    queryFn: async (): Promise<Map<number, Tarifa[]>> => {
+      const { data, error } = await supabase.from('tarifas').select('*').order('adultos')
+      if (error) throw error
+      const porQuarto = new Map<number, Tarifa[]>()
+      for (const tarifa of data) {
+        const lista = porQuarto.get(tarifa.quarto_id) ?? []
+        lista.push(tarifa)
+        porQuarto.set(tarifa.quarto_id, lista)
+      }
+      return porQuarto
+    },
+  })
+}
+
 export function useTarifas(quartoId: number | undefined) {
   return useQuery({
     queryKey: ['tarifas', quartoId],
@@ -31,7 +50,6 @@ export function useSalvarTarifa() {
         .upsert(tarifa, { onConflict: 'quarto_id,adultos' })
       if (error) throw error
     },
-    onSuccess: (_dados, tarifa) =>
-      queryClient.invalidateQueries({ queryKey: ['tarifas', tarifa.quarto_id] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tarifas'] }),
   })
 }

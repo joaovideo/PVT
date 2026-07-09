@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { Badge } from '../../components/Badge'
 import { Button } from '../../components/Button'
 import { useQuartos, type Quarto } from '../quartos/useQuartos'
+import { useTodasTarifas } from '../quartos/useTarifas'
 import { useBloqueios, useBloqueiosAdmin } from './useBloqueios'
-import { formatarData } from '../../lib/formatadores'
+import { formatarData, formatarMoeda, reaisParaCentavos } from '../../lib/formatadores'
 import { FormQuarto } from './FormQuarto'
 import { FormTarifas } from './FormTarifas'
 import { FormBloqueio } from './FormBloqueio'
@@ -11,6 +12,7 @@ import { SecaoConfigCrianca } from './SecaoConfigCrianca'
 
 export function TelaAdmin() {
   const quartos = useQuartos()
+  const tarifas = useTodasTarifas()
   const bloqueios = useBloqueios()
   const { excluir: desbloquear } = useBloqueiosAdmin()
 
@@ -31,12 +33,16 @@ export function TelaAdmin() {
   return (
     <div className="flex flex-col gap-6 p-4">
       <section>
-        <div className="mb-2 flex items-center justify-between">
-          <h1 className="text-lg font-bold text-slate-800">Quartos</h1>
+        <div className="mb-1 flex items-center justify-between">
+          <h1 className="text-lg font-bold text-slate-800">Quartos e tarifas</h1>
           <Button variante="secundario" onClick={() => setModalQuarto({ quarto: null })}>
             + Novo quarto
           </Button>
         </div>
+        <p className="mb-2 text-sm text-slate-500">
+          O preço mostrado é o nível <strong>normal</strong> por nº de adultos. Toque em “Tarifas”
+          para editar os três níveis (desconto/normal/full).
+        </p>
         <ul className="flex flex-col gap-2">
           {quartos.data?.map((quarto) => (
             <li key={quarto.id} className="rounded-lg bg-white p-3">
@@ -53,6 +59,19 @@ export function TelaAdmin() {
                   <p className="text-sm text-slate-500">
                     {quarto.camas_casal} casal · {quarto.camas_solteiro} solteiro · até{' '}
                     {quarto.capacidade_max} pessoas
+                  </p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    {(() => {
+                      const doQuarto = tarifas.data?.get(quarto.id) ?? []
+                      if (doQuarto.length === 0)
+                        return <span className="text-amber-700">Tarifas não cadastradas</span>
+                      return doQuarto.map((t) => (
+                        <span key={t.adultos} className="mr-2 inline-block whitespace-nowrap">
+                          {t.adultos} ad.:{' '}
+                          <strong>{formatarMoeda(reaisParaCentavos(t.valor_normal))}</strong>
+                        </span>
+                      ))
+                    })()}
                   </p>
                 </div>
                 <div className="flex gap-1">
