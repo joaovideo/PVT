@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useFuncionarioAtual } from '../features/auth/useFuncionarioAtual'
 import { SinoAvisos } from '../features/avisos/SinoAvisos'
+import { TrocarSenhaModal } from '../features/auth/TrocarSenhaModal'
 
 const abas = [
   {
@@ -70,19 +72,28 @@ const abas = [
 
 export function AppShell() {
   const { funcionario, sair } = useFuncionarioAtual()
+  const [trocarSenha, setTrocarSenha] = useState(false)
 
   return (
     <div className="flex min-h-dvh flex-col bg-fundo">
       <header className="sticky top-0 z-10 flex min-h-14 items-center justify-between border-b border-slate-200 bg-white px-4">
         <span className="text-lg font-bold text-marca">PVT</span>
         <div className="flex items-center gap-1">
-          <span className="text-sm text-slate-600">{funcionario?.nome}</span>
+          <button
+            onClick={() => setTrocarSenha(true)}
+            className="min-h-11 px-1 text-sm text-slate-600 underline decoration-slate-300"
+            title="Trocar minha senha"
+          >
+            {funcionario?.nome}
+          </button>
           <SinoAvisos />
           <button onClick={sair} className="min-h-11 px-2 text-sm font-medium text-slate-500">
             Sair
           </button>
         </div>
       </header>
+
+      <TrocarSenhaModal aberto={trocarSenha} aoFechar={() => setTrocarSenha(false)} />
 
       <main className="flex-1 pb-20">
         <Outlet />

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { supabase } from '../../lib/supabaseClient'
+import { supabase, urlBaseApp } from '../../lib/supabaseClient'
 
 export function TelaLogin() {
   const [email, setEmail] = useState('')
@@ -32,7 +32,7 @@ export function TelaLogin() {
       return
     }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}${window.location.pathname}#/nova-senha`,
+      redirectTo: urlBaseApp,
     })
     setAvisoReset(
       error
