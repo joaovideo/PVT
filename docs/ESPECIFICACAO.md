@@ -59,14 +59,31 @@ create table quartos (
   ativo boolean not null default true
 );
 
--- Tarifas por tipo de ocupação
+-- Tarifas por tipo de ocupação, com três níveis de preço.
+-- O funcionário escolhe o nível na reserva: desconto (mínimo autorizado),
+-- normal (padrão) ou full (alta temporada/feriado). Valores editáveis no Admin.
 create table tarifas (
   id serial primary key,
   quarto_id int not null references quartos(id),
   adultos int not null,            -- 1 = solteiro, 2 = casal...
   criancas int not null default 0, -- casal + criança etc.
-  valor_diaria numeric(10,2) not null,
+  valor_desconto numeric(10,2) not null,
+  valor_normal numeric(10,2) not null,
+  valor_full numeric(10,2) not null,
   unique (quarto_id, adultos, criancas)
+);
+
+-- Bloqueios de quarto (reforma, manutenção): o período fica indisponível
+-- para reserva e aparece como "bloqueado" no mapa. Fim exclusivo.
+create table bloqueios (
+  id serial primary key,
+  quarto_id int not null references quartos(id),
+  data_inicio date not null,
+  data_fim date not null,
+  motivo text not null,
+  criado_por uuid not null references funcionarios(id),
+  criado_em timestamptz not null default now(),
+  check (data_fim > data_inicio)
 );
 
 -- Hóspedes
@@ -87,6 +104,8 @@ create table reservas (
   hora_chegada_prevista time,      -- que horas a pessoa chega
   adultos int not null default 1,
   criancas int not null default 0,
+  nivel_preco text not null default 'normal'
+    check (nivel_preco in ('desconto','normal','full')),
   valor_total numeric(10,2) not null,
   status text not null default 'confirmada'
     check (status in ('pre-reserva','confirmada','checkin','checkout','cancelada')),
@@ -118,7 +137,9 @@ create table pagamentos (
 );
 ```
 
-O ponto central do modelo é `reserva_segmentos`: ele torna a "combinação de quartos" um cidadão de primeira classe do banco, em vez de gambiarra. A disponibilidade de um quarto num período é calculada verificando sobreposição de segmentos ativos (`status <> 'cancelada'`). Crie um índice em `(quarto_id, data_inicio, data_fim)` e uma constraint de exclusão (`EXCLUDE USING gist`) para impedir overbooking no nível do banco — nunca confie só no frontend.
+O ponto central do modelo é `reserva_segmentos`: ele torna a "combinação de quartos" um cidadão de primeira classe do banco, em vez de gambiarra. A disponibilidade de um quarto num período é calculada verificando sobreposição de segmentos ativos (`status <> 'cancelada'`) **e de bloqueios** (manutenção/reforma). Crie um índice em `(quarto_id, data_inicio, data_fim)` e uma constraint de exclusão (`EXCLUDE USING gist`) para impedir overbooking no nível do banco — nunca confie só no frontend.
+
+> **Nota de versionamento:** o banco criado no sprint 0 (migrations 0001–0004) tem `tarifas.valor_diaria` e não tem `nivel_preco` nem `bloqueios`. Essas mudanças entram como **migration 0005** — nunca editar migrations já aplicadas.
 
 O status de pagamento da reserva é derivado: `sum(pagamentos.valor)` comparado a `valor_total` → **não pago / parcial / pago**. Não armazene esse status; calcule via view:
 
@@ -140,21 +161,23 @@ group by r.id;
 
 **Mapa de quartos (tela principal).** Grade tipo calendário: quartos nas linhas, dias nas colunas, com rolagem horizontal por gestos. Células coloridas por status: livre, reservada (não paga = vermelho, parcial = amarelo, paga = verde), check-in feito, bloqueada. Tocar numa célula abre a reserva ou inicia uma nova.
 
-**Filtro de disponibilidade.** Entradas: período (check-in/check-out), nº de adultos, nº de crianças, preferência de camas (casal/solteiro). Saída em duas seções: quartos livres o período inteiro (com preço calculado pela tarifa da ocupação) e, se não houver, as combinações sugeridas pelo motor da seção 5.
+**Filtro de disponibilidade (dashboard de quartos vagos).** Entradas: período (check-in/check-out) **ou nº de diárias a partir de uma data**, nº de adultos, nº de crianças, preferência de camas (casal/solteiro). Só aparecem quartos com camas suficientes para o grupo e sem bloqueio no período. Saída em duas seções: quartos livres o período inteiro (com preço calculado pela tarifa da ocupação no nível escolhido) e, se não houver, as combinações sugeridas pelo motor da seção 5.
 
-**Nova reserva.** Hóspede (busca ou cadastro rápido), período, hora prevista de chegada, ocupação, quarto(s), valor calculado automaticamente pela tabela de tarifas com possibilidade de ajuste manual. O funcionário logado é gravado automaticamente como `criada_por`.
+**Orçamento rápido → reserva.** Fluxo central da recepção: o funcionário informa **quantidade de pessoas, diárias e nível de preço (desconto/normal/full)** e o app mostra na hora o **valor final da estadia** para passar ao cliente. Se o cliente aceitar, um toque converte o orçamento em reserva e **bloqueia o quarto naquelas datas** (via `reserva_segmentos`, protegido pela constraint anti-overbooking).
 
-**Detalhe da reserva.** Tudo em uma tela: dados do hóspede, segmentos de quarto, situação financeira com histórico de pagamentos (valor, método, quem recebeu, quando), botão "Registrar pagamento", botões de check-in/check-out, quem criou a reserva.
+**Nova reserva.** Hóspede (busca ou cadastro rápido), período, hora prevista de chegada, ocupação, **nível de preço**, quarto(s), valor calculado automaticamente pela tabela de tarifas com possibilidade de ajuste manual. O funcionário logado é gravado automaticamente como `criada_por`.
+
+**Detalhe da reserva.** Tudo em uma tela: dados do hóspede, segmentos de quarto, situação financeira com histórico de pagamentos (valor, método, quem recebeu, quando), botão "Registrar pagamento", botões de check-in/check-out, quem criou a reserva. **No check-out o app apresenta o valor final da estadia e o saldo a receber** (valor total − pagamentos já feitos).
 
 **Chegadas do dia.** Lista das reservas com check-in hoje, ordenada por hora prevista de chegada — a tela que a recepção deixa aberta.
 
-**Administração.** CRUD de quartos, tarifas e funcionários (apenas perfil admin).
+**Administração.** CRUD completo de quartos (**criar, editar configuração de camas/capacidade e excluir/desativar**), tarifas (**editar os três níveis de valor por ocupação**) e funcionários (apenas perfil admin). Inclui **bloquear/desbloquear quarto por período** com motivo (reforma, manutenção).
 
 ## 5. Motor de sugestão de combinação de quartos
 
 Minimizar trocas de quarto é um problema de **cobertura de intervalos**, e a solução correta é um algoritmo determinístico — não um LLM. O algoritmo roda no frontend em milissegundos, sem custo:
 
-1. Para o período solicitado, montar a lista de janelas livres de cada quarto compatível (capacidade e camas suficientes para a ocupação).
+1. Para o período solicitado, montar a lista de janelas livres de cada quarto compatível (capacidade e camas suficientes para a ocupação), descontando reservas ativas **e bloqueios de manutenção**.
 2. Se algum quarto cobre o período inteiro → retornar direto (zero trocas).
 3. Caso contrário, algoritmo guloso de cobertura mínima: a partir da data de check-in, escolher o quarto compatível cuja janela livre se estende mais longe; repetir a partir do fim dessa janela até cobrir o checkout. Isso é provadamente ótimo em número de segmentos (mínimo de trocas).
 4. Como desempate entre soluções com o mesmo número de trocas: menor preço total, depois manter camas do mesmo tipo.
