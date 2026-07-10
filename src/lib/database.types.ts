@@ -278,6 +278,9 @@ export type Database = {
           id: number
           nome: string
           observacoes: string | null
+          preco_alta: number
+          preco_baixa: number
+          preco_fds: number
         }
         Insert: {
           ativo?: boolean
@@ -287,6 +290,9 @@ export type Database = {
           id?: number
           nome: string
           observacoes?: string | null
+          preco_alta?: number
+          preco_baixa?: number
+          preco_fds?: number
         }
         Update: {
           ativo?: boolean
@@ -296,6 +302,9 @@ export type Database = {
           id?: number
           nome?: string
           observacoes?: string | null
+          preco_alta?: number
+          preco_baixa?: number
+          preco_fds?: number
         }
         Relationships: []
       }

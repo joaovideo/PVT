@@ -1,21 +1,14 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Button } from '../../components/Button'
 import { Input } from '../../components/Input'
 import { Select } from '../../components/Select'
 import { formatarMoeda } from '../../lib/formatadores'
 import { addDiasStr, hoje, numeroDeDiarias, type Periodo } from '../../lib/periodos'
-import { calcularEstadia, type NivelPreco } from '../../lib/precos'
-import { useConfigPousada } from '../admin/useConfigPousada'
+import { calcularEstadia, NIVEIS_PRECO, type NivelPreco } from '../../lib/precos'
 import { useQuartosDisponiveis } from '../disponibilidade/useQuartosDisponiveis'
 import type { Quarto } from '../quartos/useQuartos'
 import { FormReservar } from './FormReservar'
-
-const NIVEIS: { chave: NivelPreco; rotulo: string }[] = [
-  { chave: 'desconto', rotulo: 'Desconto' },
-  { chave: 'normal', rotulo: 'Normal' },
-  { chave: 'full', rotulo: 'Full' },
-]
 
 interface EstadoNavegacao {
   checkinSugerido?: string
@@ -26,14 +19,13 @@ export function TelaOrcamento() {
   const location = useLocation()
   const sugestao = (location.state as EstadoNavegacao | null) ?? null
 
-  const config = useConfigPousada()
   const [checkin, setCheckin] = useState(sugestao?.checkinSugerido ?? hoje())
   const [checkout, setCheckout] = useState(
     sugestao?.checkinSugerido ? addDiasStr(sugestao.checkinSugerido, 1) : '',
   )
   const [adultos, setAdultos] = useState(2)
   const [criancas, setCriancas] = useState(0)
-  const [nivel, setNivel] = useState<NivelPreco>('normal')
+  const [nivel, setNivel] = useState<NivelPreco>('baixa')
   const [quartoParaReservar, setQuartoParaReservar] = useState<Quarto | null>(null)
 
   const periodo: Periodo = { inicio: checkin, fim: checkout }
@@ -42,12 +34,13 @@ export function TelaOrcamento() {
 
   const disponiveis = useQuartosDisponiveis(periodo, totalPessoas)
 
-  const valorPorQuarto = useMemo(() => {
-    if (!config.data || diarias <= 0) return null
-    return calcularEstadia(config.data, nivel, adultos, criancas, diarias)
-  }, [config.data, nivel, adultos, criancas, diarias])
-
   const buscaValida = checkout > checkin && totalPessoas > 0
+
+  // Valor da estadia do quarto no nível escolhido (null no 'custom').
+  function valorDoQuarto(quarto: Quarto): number | null {
+    if (diarias <= 0) return null
+    return calcularEstadia(quarto, nivel, diarias)
+  }
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -85,15 +78,16 @@ export function TelaOrcamento() {
         />
       </div>
       <Select
-        rotulo="Nível de preço"
+        rotulo="Tabela de preço"
         value={nivel}
         onChange={(e) => setNivel(e.target.value as NivelPreco)}
       >
-        {NIVEIS.map((n) => (
+        {NIVEIS_PRECO.map((n) => (
           <option key={n.chave} value={n.chave}>
             {n.rotulo}
           </option>
         ))}
+        <option value="custom">Personalizado (digitar valor)</option>
       </Select>
 
       {buscaValida && diarias > 0 && (
@@ -127,36 +121,37 @@ export function TelaOrcamento() {
 
       {buscaValida && disponiveis.data && disponiveis.data.length > 0 && (
         <ul className="flex flex-col gap-2">
-          {disponiveis.data.map((quarto) => (
-            <li
-              key={quarto.id}
-              className={`flex items-center justify-between gap-2 rounded-lg bg-white p-3 ${
-                quarto.id === sugestao?.quartoIdSugerido ? 'ring-2 ring-marca' : ''
-              }`}
-            >
-              <div>
-                <p className="font-semibold text-slate-800">
-                  {quarto.nome}
-                  {quarto.id === sugestao?.quartoIdSugerido && (
-                    <span className="ml-2 text-xs font-normal text-marca">tocado no mapa</span>
-                  )}
-                </p>
-                <p className="text-sm text-slate-500">até {quarto.capacidade_max} pessoas</p>
-              </div>
-              <div className="flex items-center gap-2">
-                {valorPorQuarto !== null && (
-                  <p className="text-lg font-bold text-slate-800">
-                    {formatarMoeda(valorPorQuarto)}
+          {disponiveis.data.map((quarto) => {
+            const valor = valorDoQuarto(quarto)
+            return (
+              <li
+                key={quarto.id}
+                className={`flex items-center justify-between gap-2 rounded-lg bg-white p-3 ${
+                  quarto.id === sugestao?.quartoIdSugerido ? 'ring-2 ring-marca' : ''
+                }`}
+              >
+                <div>
+                  <p className="font-semibold text-slate-800">
+                    {quarto.nome}
+                    {quarto.id === sugestao?.quartoIdSugerido && (
+                      <span className="ml-2 text-xs font-normal text-marca">tocado no mapa</span>
+                    )}
                   </p>
-                )}
-                <Button onClick={() => setQuartoParaReservar(quarto)}>Reservar</Button>
-              </div>
-            </li>
-          ))}
+                  <p className="text-sm text-slate-500">até {quarto.capacidade_max} pessoas</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <p className="text-lg font-bold text-slate-800">
+                    {valor !== null ? formatarMoeda(valor) : 'a definir'}
+                  </p>
+                  <Button onClick={() => setQuartoParaReservar(quarto)}>Reservar</Button>
+                </div>
+              </li>
+            )
+          })}
         </ul>
       )}
 
-      {quartoParaReservar && valorPorQuarto !== null && (
+      {quartoParaReservar && (
         <FormReservar
           aberto
           quarto={quartoParaReservar}
@@ -165,7 +160,7 @@ export function TelaOrcamento() {
           adultos={adultos}
           criancas={criancas}
           nivel={nivel}
-          valorSugeridoCentavos={valorPorQuarto}
+          valorSugeridoCentavos={valorDoQuarto(quartoParaReservar)}
           aoFechar={() => setQuartoParaReservar(null)}
         />
       )}

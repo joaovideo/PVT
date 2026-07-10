@@ -17,7 +17,7 @@ interface Props {
   adultos: number
   criancas: number
   nivel: NivelPreco
-  valorSugeridoCentavos: number
+  valorSugeridoCentavos: number | null // null = nível personalizado (digitar)
   aoFechar: () => void
 }
 
@@ -63,7 +63,7 @@ export function FormReservar({
     setHospedeNovoNome('')
     setHospedeNovoTelefone('')
     setHoraChegada('')
-    setValorReais((valorSugeridoCentavos / 100).toFixed(2))
+    setValorReais(valorSugeridoCentavos !== null ? (valorSugeridoCentavos / 100).toFixed(2) : '')
     setDeuSinal(false)
     setSinalValor('')
     setSinalMetodo('pix')
@@ -77,6 +77,10 @@ export function FormReservar({
     setErro(null)
     if (!temHospede) {
       setErro('Informe o hóspede.')
+      return
+    }
+    if (!valorReais || Number(valorReais) <= 0) {
+      setErro('Informe o valor total da estadia.')
       return
     }
     try {
