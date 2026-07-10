@@ -8,6 +8,7 @@ import { formatarData, formatarMoeda, reaisParaCentavos } from '../../lib/format
 import { FormQuarto } from './FormQuarto'
 import { FormBloqueio } from './FormBloqueio'
 import { SecaoFuncionarios } from './SecaoFuncionarios'
+import { SecaoCategorias } from './SecaoCategorias'
 import { SecaoItensExtras } from './SecaoItensExtras'
 import { useFuncionarioAtual } from '../auth/useFuncionarioAtual'
 
@@ -148,6 +149,8 @@ export function TelaAdmin() {
           ))}
         </ul>
       </section>
+
+      {ehAdmin && <SecaoCategorias />}
 
       {ehAdmin && <SecaoItensExtras />}
 
