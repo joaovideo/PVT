@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
+import { estadoRecuperacao } from '../../lib/recuperacaoSenha'
 import { Button } from '../../components/Button'
 import { Input } from '../../components/Input'
 
-/** Tela onde o link de redefinição de senha (do e-mail) cai. O supabase-js
- *  processa o token da URL e estabelece uma sessão de recuperação; aqui a
+/** Tela onde o link de redefinição de senha (do e-mail) cai. O token da URL já
+ *  foi consumido em `consumirHashDeRecuperacao`, antes do React montar; aqui a
  *  pessoa escolhe a senha nova. Fica FORA do AuthGate para funcionar mesmo
  *  para quem ainda não é funcionário ativo. */
 export function TelaNovaSenha() {
@@ -15,15 +16,13 @@ export function TelaNovaSenha() {
   const [sucesso, setSucesso] = useState(false)
 
   useEffect(() => {
-    // O evento PASSWORD_RECOVERY confirma que viemos de um link válido.
-    const { data } = supabase.auth.onAuthStateChange((evento) => {
-      if (evento === 'PASSWORD_RECOVERY') setTemSessaoRecuperacao(true)
+    if (estadoRecuperacao.erro) {
+      setTemSessaoRecuperacao(false)
+      return
+    }
+    supabase.auth.getSession().then(({ data }) => {
+      setTemSessaoRecuperacao(data.session !== null)
     })
-    // Também cobre o caso de a sessão já ter sido estabelecida antes do listener.
-    supabase.auth.getSession().then(({ data: s }) => {
-      setTemSessaoRecuperacao((atual) => atual ?? s.session !== null)
-    })
-    return () => data.subscription.unsubscribe()
   }, [])
 
   async function salvar(evento: React.FormEvent) {
@@ -55,10 +54,15 @@ export function TelaNovaSenha() {
           </a>
         </div>
       ) : temSessaoRecuperacao === false ? (
-        <p className="mt-6 max-w-sm text-center text-slate-500">
-          Link inválido ou expirado. Volte ao login e use “Esqueci minha senha” para receber um
-          novo.
-        </p>
+        <div className="mt-6 flex w-full max-w-sm flex-col gap-2 text-center">
+          <p className="text-slate-500">
+            Link inválido ou expirado. Volte ao login e use “Esqueci minha senha” para receber um
+            novo.
+          </p>
+          {estadoRecuperacao.erro && (
+            <p className="text-xs text-slate-400">Detalhe: {estadoRecuperacao.erro}</p>
+          )}
+        </div>
       ) : (
         <form onSubmit={salvar} className="mt-6 flex w-full max-w-sm flex-col gap-3">
           <Input
