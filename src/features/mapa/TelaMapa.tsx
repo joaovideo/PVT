@@ -9,10 +9,7 @@ const DIAS_JANELA = 14
 
 const CORES: Record<CelulaMapa['tipo'], string> = {
   livre: 'bg-livre-fundo text-livre-texto',
-  nao_pago: 'bg-naopago-fundo text-naopago-texto',
-  parcial: 'bg-parcial-fundo text-parcial-texto',
-  pago: 'bg-pago-fundo text-pago-texto',
-  checkin: 'bg-checkin-fundo text-checkin-texto',
+  ocupado: 'bg-ocupado-fundo text-ocupado-texto',
   bloqueada: 'bg-bloqueada-fundo text-bloqueada-texto',
 }
 
@@ -78,21 +75,12 @@ export function TelaMapa() {
         </div>
       </div>
 
-      <div className="flex gap-2 text-xs text-slate-500">
+      <div className="flex gap-3 text-xs text-slate-500">
         <span className="flex items-center gap-1">
           <span className="h-3 w-3 rounded bg-livre-fundo" /> Livre
         </span>
         <span className="flex items-center gap-1">
-          <span className="h-3 w-3 rounded bg-naopago-fundo" /> Não pago
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="h-3 w-3 rounded bg-parcial-fundo" /> Parcial
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="h-3 w-3 rounded bg-pago-fundo" /> Pago
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="h-3 w-3 rounded bg-checkin-fundo" /> Check-in
+          <span className="h-3 w-3 rounded bg-ocupado-fundo" /> Ocupado
         </span>
         <span className="flex items-center gap-1">
           <span className="h-3 w-3 rounded bg-bloqueada-fundo" /> Bloqueado

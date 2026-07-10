@@ -7,6 +7,12 @@
 
   --color-livre-fundo: #e2e8f0;
   --color-livre-texto: #334155;
+  --color-ocupado-fundo: #bfdbfe;
+  --color-ocupado-texto: #1e40af;
+  --color-bloqueada-fundo: #fecaca;
+  --color-bloqueada-texto: #991b1b;
+
+  /* Situação financeira (selos das telas de reserva/lista), fora do mapa */
   --color-pago-fundo: #dcfce7;
   --color-pago-texto: #166534;
   --color-parcial-fundo: #fef3c7;
@@ -15,6 +21,4 @@
   --color-naopago-texto: #991b1b;
   --color-checkin-fundo: #dbeafe;
   --color-checkin-texto: #1e40af;
-  --color-bloqueada-fundo: #d4d4d8;
-  --color-bloqueada-texto: #3f3f46;
 }
