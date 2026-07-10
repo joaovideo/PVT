@@ -54,6 +54,24 @@ export type Database = {
           },
         ]
       }
+      categorias_itens: {
+        Row: {
+          id: number
+          nome: string
+          ordem: number
+        }
+        Insert: {
+          id?: number
+          nome: string
+          ordem?: number
+        }
+        Update: {
+          id?: number
+          nome?: string
+          ordem?: number
+        }
+        Relationships: []
+      }
       config_pousada: {
         Row: {
           adulto_valor_desconto: number

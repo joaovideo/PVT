@@ -4,24 +4,26 @@ import { Button } from '../../components/Button'
 import { formatarMoeda, reaisParaCentavos } from '../../lib/formatadores'
 import { FormItemExtra } from './FormItemExtra'
 import { useItensExtras, useItensExtrasAdmin, type ItemExtra } from './useItensExtras'
-import { ordemCategoria } from './categoriasItens'
+import { useCategorias, criarOrdemCategoria } from './useCategoriasItens'
 
 export function SecaoItensExtras() {
   const itens = useItensExtras()
+  const categorias = useCategorias()
   const { apagar } = useItensExtrasAdmin()
   const [modal, setModal] = useState<{ item: ItemExtra | null } | null>(null)
   const [confirmar, setConfirmar] = useState<number | null>(null)
 
-  // Agrupa por categoria, na ordem fixa de CATEGORIAS_ITENS (não alfabética).
+  // Agrupa por categoria, na ordem definida pelo admin (não alfabética).
   const grupos = useMemo(() => {
+    const ordem = criarOrdemCategoria(categorias.data ?? [])
     const porCategoria = new Map<string, ItemExtra[]>()
     for (const item of itens.data ?? []) {
       const lista = porCategoria.get(item.categoria) ?? []
       lista.push(item)
       porCategoria.set(item.categoria, lista)
     }
-    return [...porCategoria.entries()].sort((a, b) => ordemCategoria(a[0]) - ordemCategoria(b[0]))
-  }, [itens.data])
+    return [...porCategoria.entries()].sort((a, b) => ordem(a[0]) - ordem(b[0]))
+  }, [itens.data, categorias.data])
 
   return (
     <section>

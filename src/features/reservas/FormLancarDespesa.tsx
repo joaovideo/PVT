@@ -5,21 +5,30 @@ import { Select } from '../../components/Select'
 import { Input } from '../../components/Input'
 import { formatarMoeda, reaisParaCentavos } from '../../lib/formatadores'
 import { useItensExtrasAtivos, type ItemExtra } from '../admin/useItensExtras'
-import { ordemCategoria } from '../admin/categoriasItens'
+import {
+  useCategorias,
+  criarOrdemCategoria,
+  CATEGORIA_PADRAO,
+  type CategoriaItem,
+} from '../admin/useCategoriasItens'
 import { useFuncionarioAtual } from '../auth/useFuncionarioAtual'
 import { useLancarDespesa } from './useAcoesReserva'
 
-/** Agrupa os itens por categoria, na ordem do cardápio (não alfabética), com os
- *  itens de cada grupo em ordem alfabética. Espelha o que a tela de Admin faz. */
-function agruparPorCategoria(itens: ItemExtra[]): [string, ItemExtra[]][] {
+/** Agrupa os itens por categoria, na ordem definida no Admin (não alfabética),
+ *  com os itens de cada grupo em ordem alfabética. Espelha a tela de Admin. */
+function agruparPorCategoria(
+  itens: ItemExtra[],
+  categorias: CategoriaItem[],
+): [string, ItemExtra[]][] {
+  const ordem = criarOrdemCategoria(categorias)
   const grupos = new Map<string, ItemExtra[]>()
   for (const item of itens) {
-    const categoria = item.categoria ?? 'Outros'
+    const categoria = item.categoria ?? CATEGORIA_PADRAO
     const grupo = grupos.get(categoria)
     if (grupo) grupo.push(item)
     else grupos.set(categoria, [item])
   }
-  return [...grupos.entries()].sort(([a], [b]) => ordemCategoria(a) - ordemCategoria(b))
+  return [...grupos.entries()].sort(([a], [b]) => ordem(a) - ordem(b))
 }
 
 /** Valor do <option> do item avulso. Não colide com id do catálogo (números). */
@@ -33,6 +42,7 @@ interface Props {
 
 export function FormLancarDespesa({ aberto, reservaId, aoFechar }: Props) {
   const itens = useItensExtrasAtivos()
+  const categorias = useCategorias()
   const { funcionario } = useFuncionarioAtual()
   const lancar = useLancarDespesa()
   const [itemId, setItemId] = useState('')
@@ -54,7 +64,7 @@ export function FormLancarDespesa({ aberto, reservaId, aoFechar }: Props) {
 
   const avulso = itemId === AVULSO
   const item = itens.data?.find((i) => String(i.id) === itemId)
-  const grupos = agruparPorCategoria(itens.data ?? [])
+  const grupos = agruparPorCategoria(itens.data ?? [], categorias.data ?? [])
 
   const qtd = Number(quantidade)
   const qtdValida = quantidade !== '' && Number.isInteger(qtd) && qtd >= 1
