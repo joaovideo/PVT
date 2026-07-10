@@ -103,13 +103,16 @@ export function TelaReservaDetalhe() {
       {r.pagamentos.length > 0 && (
         <section className="rounded-lg bg-white p-3">
           <p className="mb-2 text-sm font-semibold text-slate-700">Pagamentos</p>
-          <ul className="flex flex-col gap-1 text-sm text-slate-600">
+          <ul className="flex flex-col gap-2 text-sm text-slate-600">
             {r.pagamentos.map((p) => (
-              <li key={p.id} className="flex justify-between">
-                <span>
-                  {p.metodo} · {p.funcionario?.nome} · {formatarDataHora(p.recebido_em)}
-                </span>
-                <span className="font-medium">{formatarMoeda(reaisParaCentavos(p.valor))}</span>
+              <li key={p.id} className="flex flex-col gap-0.5">
+                <div className="flex justify-between">
+                  <span>
+                    {p.metodo} · {p.funcionario?.nome} · {formatarDataHora(p.recebido_em)}
+                  </span>
+                  <span className="font-medium">{formatarMoeda(reaisParaCentavos(p.valor))}</span>
+                </div>
+                {p.observacao && <p className="text-xs text-slate-400">{p.observacao}</p>}
               </li>
             ))}
           </ul>
