@@ -1,44 +1,32 @@
 import type { Tables } from './database.types'
 
-export type NivelPreco = 'desconto' | 'normal' | 'full'
-export type ConfigPousada = Tables<'config_pousada'>
+/** Níveis de preço por quarto + 'custom' (valor digitado na reserva). */
+export type NivelPreco = 'baixa' | 'alta' | 'fds' | 'custom'
 
-/** Valor unitário do adulto e da criança para um nível de preço, em centavos. */
-export function valoresUnitarios(config: ConfigPousada, nivel: NivelPreco) {
-  const adulto = {
-    desconto: config.adulto_valor_desconto,
-    normal: config.adulto_valor_normal,
-    full: config.adulto_valor_full,
+export const NIVEIS_PRECO: { chave: Exclude<NivelPreco, 'custom'>; rotulo: string }[] = [
+  { chave: 'baixa', rotulo: 'Baixa temporada' },
+  { chave: 'alta', rotulo: 'Alta temporada' },
+  { chave: 'fds', rotulo: 'Fim de semana' },
+]
+
+type Quarto = Tables<'quartos'>
+
+/** Preço da diária do quarto no nível escolhido, em centavos.
+ *  'custom' não tem preço fixo — retorna null (o funcionário digita). */
+export function precoDiariaCentavos(quarto: Quarto, nivel: NivelPreco): number | null {
+  const reais = {
+    baixa: quarto.preco_baixa,
+    alta: quarto.preco_alta,
+    fds: quarto.preco_fds,
+    custom: null,
   }[nivel]
-  const crianca = {
-    desconto: config.crianca_valor_desconto,
-    normal: config.crianca_valor_normal,
-    full: config.crianca_valor_full,
-  }[nivel]
-  return {
-    adultoCentavos: Math.round(adulto * 100),
-    criancaCentavos: Math.round(crianca * 100),
-  }
+  // null/undefined (nível custom, ou coluna ainda não migrada) → sem preço fixo
+  return reais == null || Number.isNaN(reais) ? null : Math.round(reais * 100)
 }
 
-/** Diária em centavos = adultos × valor adulto + crianças × valor criança. */
-export function calcularDiaria(
-  config: ConfigPousada,
-  nivel: NivelPreco,
-  adultos: number,
-  criancas: number,
-): number {
-  const { adultoCentavos, criancaCentavos } = valoresUnitarios(config, nivel)
-  return adultos * adultoCentavos + criancas * criancaCentavos
-}
-
-/** Total da estadia em centavos = diária × nº de diárias. */
-export function calcularEstadia(
-  config: ConfigPousada,
-  nivel: NivelPreco,
-  adultos: number,
-  criancas: number,
-  diarias: number,
-): number {
-  return calcularDiaria(config, nivel, adultos, criancas) * diarias
+/** Total da estadia em centavos = diária do quarto × nº de diárias.
+ *  Retorna null no nível 'custom' (valor definido manualmente). */
+export function calcularEstadia(quarto: Quarto, nivel: NivelPreco, diarias: number): number | null {
+  const diaria = precoDiariaCentavos(quarto, nivel)
+  return diaria === null ? null : diaria * diarias
 }

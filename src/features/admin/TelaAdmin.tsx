@@ -4,10 +4,9 @@ import { Button } from '../../components/Button'
 import { useQuartos, type Quarto } from '../quartos/useQuartos'
 import { useQuartosAdmin } from '../quartos/useQuartosAdmin'
 import { useBloqueios, useBloqueiosAdmin } from './useBloqueios'
-import { formatarData } from '../../lib/formatadores'
+import { formatarData, formatarMoeda, reaisParaCentavos } from '../../lib/formatadores'
 import { FormQuarto } from './FormQuarto'
 import { FormBloqueio } from './FormBloqueio'
-import { SecaoValores } from './SecaoValores'
 import { SecaoFuncionarios } from './SecaoFuncionarios'
 import { SecaoItensExtras } from './SecaoItensExtras'
 import { useFuncionarioAtual } from '../auth/useFuncionarioAtual'
@@ -39,15 +38,8 @@ export function TelaAdmin() {
     <div className="flex flex-col gap-6 p-4">
       {ehAdmin && (
         <section>
-          <h1 className="mb-2 text-lg font-bold text-slate-800">Valores da diária</h1>
-          <SecaoValores />
-        </section>
-      )}
-
-      {ehAdmin && (
-        <section>
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-800">Quartos</h2>
+            <h1 className="text-lg font-bold text-slate-800">Quartos e preços</h1>
             <Button variante="secundario" onClick={() => setModalQuarto({ quarto: null })}>
               + Novo quarto
             </Button>
@@ -68,6 +60,11 @@ export function TelaAdmin() {
                     <p className="text-sm text-slate-500">
                       {quarto.camas_casal} casal · {quarto.camas_solteiro} solteiro · até{' '}
                       {quarto.capacidade_max} pessoas
+                    </p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      Baixa {formatarMoeda(reaisParaCentavos(quarto.preco_baixa))} · Alta{' '}
+                      {formatarMoeda(reaisParaCentavos(quarto.preco_alta))} · FDS{' '}
+                      {formatarMoeda(reaisParaCentavos(quarto.preco_fds))}
                     </p>
                   </div>
                   <div className="flex gap-1">

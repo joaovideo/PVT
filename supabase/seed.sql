@@ -29,14 +29,16 @@ on conflict (id) do update
   set nome = excluded.nome, ativo = excluded.ativo,
       admin = excluded.admin, email = excluded.email;
 
--- 6 quartos variados
-insert into quartos (nome, camas_casal, camas_solteiro, capacidade_max, observacoes) values
-  ('Quarto 1 — Ipê',       1, 0, 2, 'Vista para o jardim'),
-  ('Quarto 2 — Jasmim',    1, 1, 3, null),
-  ('Quarto 3 — Lavanda',   0, 2, 2, 'Térreo, acessível'),
-  ('Quarto 4 — Manacá',    1, 2, 4, 'Família'),
-  ('Quarto 5 — Orquídea',  1, 0, 2, 'Varanda com rede'),
-  ('Quarto 6 — Primavera', 2, 1, 5, 'Suíte master');
+-- 6 quartos variados (preço por quarto: baixa / alta / fim de semana — 0012)
+insert into quartos
+  (nome, camas_casal, camas_solteiro, capacidade_max, observacoes,
+   preco_baixa, preco_alta, preco_fds) values
+  ('Quarto 1 — Ipê',       1, 0, 2, 'Vista para o jardim', 180, 260, 220),
+  ('Quarto 2 — Jasmim',    1, 1, 3, null,                  200, 290, 240),
+  ('Quarto 3 — Lavanda',   0, 2, 2, 'Térreo, acessível',   170, 240, 200),
+  ('Quarto 4 — Manacá',    1, 2, 4, 'Família',             240, 340, 290),
+  ('Quarto 5 — Orquídea',  1, 0, 2, 'Varanda com rede',    190, 280, 230),
+  ('Quarto 6 — Primavera', 2, 1, 5, 'Suíte master',        280, 400, 340);
 
 -- Preço é global (migration 0006): valor por adulto e por criança na
 -- config_pousada, em 3 níveis. Ajusta os valores de demonstração aqui.
