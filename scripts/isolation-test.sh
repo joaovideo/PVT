@@ -95,5 +95,17 @@ else
   echo "  ✓ criar_pousada bloqueado para não-super-admin"
 fi
 
+# --- Storage do logo: admin só escreve na pasta da própria pousada (0020) ---
+if as_user "$A" "insert into storage.objects(bucket_id,name) values('branding','1/logo.png');" >/dev/null 2>&1; then
+  echo "  ✓ admin A sobe logo na pasta da própria pousada"
+else
+  echo "  ✗ admin A deveria subir na própria pasta"; FAIL=1
+fi
+if as_user "$A" "insert into storage.objects(bucket_id,name) values('branding','2/logo.png');" >/dev/null 2>&1; then
+  echo "  ✗ admin A não deveria escrever na pasta da pousada 2"; FAIL=1
+else
+  echo "  ✓ admin A bloqueado na pasta de outra pousada"
+fi
+
 echo ""
 [ "$FAIL" = 0 ] && echo "✅ isolamento entre tenants OK" || { echo "❌ FALHA no isolamento"; exit 1; }

@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '../../components/Button'
 import { Input } from '../../components/Input'
-import { usePousada, useAtualizarBranding } from '../pousada/usePousada'
+import { usePousada, useAtualizarBranding, useUploadLogo } from '../pousada/usePousada'
 
 // Defaults = tokens do index.css, usados quando a pousada ainda não tem cor.
 const PADRAO = { primaria: '#1e293b', secundaria: '#64748b', fundo: '#f8fafc' }
@@ -9,6 +9,9 @@ const PADRAO = { primaria: '#1e293b', secundaria: '#64748b', fundo: '#f8fafc' }
 export function SecaoBranding() {
   const pousada = usePousada()
   const salvar = useAtualizarBranding()
+  const enviarLogo = useUploadLogo()
+  const inputLogo = useRef<HTMLInputElement>(null)
+  const [erroLogo, setErroLogo] = useState<string | null>(null)
 
   const [nome, setNome] = useState('')
   const [endereco, setEndereco] = useState('')
@@ -51,10 +54,61 @@ export function SecaoBranding() {
     }
   }
 
+  async function aoEscolherLogo(evento: React.ChangeEvent<HTMLInputElement>) {
+    const arquivo = evento.target.files?.[0]
+    evento.target.value = '' // permite reenviar o mesmo arquivo
+    if (!arquivo || !pousada.data) return
+    setErroLogo(null)
+    if (!arquivo.type.startsWith('image/')) {
+      setErroLogo('Escolha uma imagem (PNG, JPG, SVG…).')
+      return
+    }
+    if (arquivo.size > 2 * 1024 * 1024) {
+      setErroLogo('Imagem muito grande (máx. 2 MB).')
+      return
+    }
+    try {
+      await enviarLogo.mutateAsync({ pousadaId: pousada.data.id, arquivo })
+    } catch {
+      setErroLogo('Não foi possível enviar o logo. Tente de novo.')
+    }
+  }
+
   return (
     <section>
       <h2 className="mb-2 text-lg font-bold text-slate-800">Identidade visual</h2>
       <form onSubmit={enviar} className="flex flex-col gap-3 rounded-lg bg-white p-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+            {pousada.data.logo_url ? (
+              <img
+                src={pousada.data.logo_url}
+                alt="Logo"
+                className="h-full w-full object-contain"
+              />
+            ) : (
+              <span className="text-xs text-slate-400">sem logo</span>
+            )}
+          </div>
+          <div className="flex flex-col gap-1">
+            <input
+              ref={inputLogo}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={aoEscolherLogo}
+            />
+            <Button
+              type="button"
+              variante="secundario"
+              disabled={enviarLogo.isPending}
+              onClick={() => inputLogo.current?.click()}
+            >
+              {enviarLogo.isPending ? 'Enviando…' : 'Enviar logo'}
+            </Button>
+            {erroLogo && <p className="text-xs text-red-600">{erroLogo}</p>}
+          </div>
+        </div>
         <Input
           rotulo="Nome exibido"
           value={nome}
@@ -100,9 +154,6 @@ export function SecaoBranding() {
             }}
           />
         </div>
-        <p className="text-xs text-slate-400">
-          O logo será adicionável em breve (upload). Por enquanto, edite nome, endereço e cores.
-        </p>
         {erro && (
           <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
             {erro}
