@@ -9,6 +9,8 @@ import { useMudarStatusReserva } from './useAcoesReserva'
 import { FormRegistrarPagamento } from './FormRegistrarPagamento'
 import { FormLancarDespesa } from './FormLancarDespesa'
 import { FormCancelarReserva } from './FormCancelarReserva'
+import { FormExcluirReserva } from './FormExcluirReserva'
+import { useFuncionarioAtual } from '../auth/useFuncionarioAtual'
 
 function formatarDataHora(iso: string): string {
   return format(parseISO(iso), "dd/MM 'às' HH:mm")
@@ -20,10 +22,12 @@ export function TelaReservaDetalhe() {
   const navigate = useNavigate()
   const reserva = useReservaDetalhe(reservaId)
   const mudarStatus = useMudarStatusReserva()
+  const { funcionario } = useFuncionarioAtual()
 
   const [modalPagamento, setModalPagamento] = useState(false)
   const [modalDespesa, setModalDespesa] = useState(false)
   const [modalCancelar, setModalCancelar] = useState(false)
+  const [modalExcluir, setModalExcluir] = useState(false)
 
   if (reserva.isLoading) return <p className="p-4 text-slate-500">Carregando…</p>
   if (reserva.isError || !reserva.data)
@@ -43,6 +47,7 @@ export function TelaReservaDetalhe() {
   const podeCheckin = r.status === 'confirmada' || r.status === 'pre-reserva'
   const podeCheckout = r.status === 'checkin'
   const podeCancelar = r.status !== 'cancelada' && r.status !== 'checkout'
+  const ehAdmin = funcionario?.admin === true
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -162,6 +167,19 @@ export function TelaReservaDetalhe() {
         )}
       </section>
 
+      {ehAdmin && (
+        <section className="rounded-lg border border-red-100 bg-red-50/50 p-3">
+          <p className="mb-2 text-sm font-semibold text-slate-700">Administração</p>
+          <p className="mb-3 text-xs text-slate-500">
+            Exclui a reserva de todas as telas e libera o quarto. O histórico é arquivado para
+            auditoria antes de apagar.
+          </p>
+          <Button variante="perigo" onClick={() => setModalExcluir(true)}>
+            Excluir reserva
+          </Button>
+        </section>
+      )}
+
       {r.reserva_eventos.length > 0 && (
         <section className="rounded-lg bg-white p-3">
           <p className="mb-2 text-sm font-semibold text-slate-700">Histórico</p>
@@ -196,6 +214,17 @@ export function TelaReservaDetalhe() {
           navigate('/reservas')
         }}
       />
+      {ehAdmin && (
+        <FormExcluirReserva
+          aberto={modalExcluir}
+          reservaId={reservaId}
+          aoFechar={() => setModalExcluir(false)}
+          aoExcluir={() => {
+            setModalExcluir(false)
+            navigate('/reservas')
+          }}
+        />
+      )}
     </div>
   )
 }
