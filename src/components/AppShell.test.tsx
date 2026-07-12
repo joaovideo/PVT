@@ -15,6 +15,12 @@ vi.mock('../features/auth/useFuncionarioAtual', () => ({
   }),
 }))
 
+// AppShell lê a pousada (branding) via useQuery — mockado para o teste de nav
+// não precisar de QueryClientProvider nem de rede.
+vi.mock('../features/pousada/usePousada', () => ({
+  usePousada: () => ({ data: null }),
+}))
+
 function renderShell() {
   render(
     <MemoryRouter initialEntries={['/mapa']}>

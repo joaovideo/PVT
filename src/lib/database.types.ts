@@ -287,6 +287,45 @@ export type Database = {
           },
         ]
       }
+      pousadas: {
+        Row: {
+          id: number
+          slug: string
+          nome_exibicao: string
+          endereco: string | null
+          logo_url: string | null
+          cor_primaria: string | null
+          cor_secundaria: string | null
+          cor_fundo: string | null
+          ativo: boolean
+          criada_em: string
+        }
+        Insert: {
+          id?: number
+          slug: string
+          nome_exibicao: string
+          endereco?: string | null
+          logo_url?: string | null
+          cor_primaria?: string | null
+          cor_secundaria?: string | null
+          cor_fundo?: string | null
+          ativo?: boolean
+          criada_em?: string
+        }
+        Update: {
+          id?: number
+          slug?: string
+          nome_exibicao?: string
+          endereco?: string | null
+          logo_url?: string | null
+          cor_primaria?: string | null
+          cor_secundaria?: string | null
+          cor_fundo?: string | null
+          ativo?: boolean
+          criada_em?: string
+        }
+        Relationships: []
+      }
       quartos: {
         Row: {
           ativo: boolean
