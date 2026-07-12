@@ -38,3 +38,29 @@ export function useAtualizarBranding() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pousada'] }),
   })
 }
+
+/** Sobe o logo para o Storage (bucket `branding`, pasta da própria pousada — RLS
+ *  em 0020) e grava a URL pública em pousadas.logo_url. */
+export function useUploadLogo() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ pousadaId, arquivo }: { pousadaId: number; arquivo: File }) => {
+      const ext = (arquivo.name.split('.').pop() || 'png').toLowerCase()
+      const caminho = `${pousadaId}/logo.${ext}`
+      const up = await supabase.storage
+        .from('branding')
+        .upload(caminho, arquivo, { upsert: true, contentType: arquivo.type })
+      if (up.error) throw up.error
+      const { data } = supabase.storage.from('branding').getPublicUrl(caminho)
+      // ?v=timestamp força o cabeçalho a recarregar o logo após re-upload
+      const url = `${data.publicUrl}?v=${Date.now()}`
+      const { error } = await supabase
+        .from('pousadas')
+        .update({ logo_url: url })
+        .eq('id', pousadaId)
+      if (error) throw error
+      return url
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pousada'] }),
+  })
+}
