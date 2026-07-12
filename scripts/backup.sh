@@ -13,15 +13,18 @@ set -euo pipefail
 : "${SUPABASE_DB_URL:?defina SUPABASE_DB_URL com a string de conexão do Postgres de produção}"
 cd "$(dirname "$0")/.."
 
+IMG="${PG_IMAGE:-postgres:16-alpine}"
 mkdir -p backups
 ts=$(date +%Y%m%d-%H%M%S)
 out="backups/pvt-public-${ts}.sql.gz"
 
+# pg_dump roda DENTRO do Docker (mesma versão do servidor) — não precisa
+# instalar Postgres na máquina, só ter o Docker rodando.
 echo "→ pg_dump (schema public, schema+dados) de produção → $out"
-pg_dump "$SUPABASE_DB_URL" \
+docker run --rm "$IMG" pg_dump "$SUPABASE_DB_URL" \
   --schema=public --no-owner --no-privileges --clean --if-exists \
   | gzip >"$out"
 
 echo "✅ backup: $out ($(du -h "$out" | cut -f1))"
-echo "   rollback em produção:  gunzip -c '$out' | psql \"\$SUPABASE_DB_URL\""
+echo "   rollback em produção:  gunzip -c '$out' | docker run --rm -i $IMG psql \"\$SUPABASE_DB_URL\""
 echo "   ensaiar migration:     scripts/rehearse.sh '$out' supabase/migrations/00XX_*.sql"
