@@ -6,7 +6,9 @@ import tseslint from 'typescript-eslint'
 import prettier from 'eslint-config-prettier'
 
 export default tseslint.config(
-  { ignores: ['dist', '.vite'] },
+  // supabase/functions rodam em Deno (global `Deno`, imports por URL) — fora do
+  // escopo do lint do app, que usa globals de browser. Formatadas pelo Prettier.
+  { ignores: ['dist', '.vite', 'supabase/functions'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
