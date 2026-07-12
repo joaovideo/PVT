@@ -7,6 +7,7 @@ import { useBloqueios, useBloqueiosAdmin } from './useBloqueios'
 import { formatarData, formatarMoeda, reaisParaCentavos } from '../../lib/formatadores'
 import { FormQuarto } from './FormQuarto'
 import { FormBloqueio } from './FormBloqueio'
+import { SecaoBranding } from './SecaoBranding'
 import { SecaoFuncionarios } from './SecaoFuncionarios'
 import { SecaoCategorias } from './SecaoCategorias'
 import { SecaoItensExtras } from './SecaoItensExtras'
@@ -37,6 +38,7 @@ export function TelaAdmin() {
 
   return (
     <div className="flex flex-col gap-6 p-4">
+      {ehAdmin && <SecaoBranding />}
       {ehAdmin && (
         <section>
           <div className="mb-2 flex items-center justify-between">

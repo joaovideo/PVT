@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useFuncionarioAtual } from '../features/auth/useFuncionarioAtual'
 import { SinoAvisos } from '../features/avisos/SinoAvisos'
 import { TrocarSenhaModal } from '../features/auth/TrocarSenhaModal'
+import { usePousada } from '../features/pousada/usePousada'
+import { aplicarTemaPousada } from '../features/pousada/temaPousada'
 
 const abas = [
   {
@@ -73,6 +75,12 @@ const abas = [
 export function AppShell() {
   const { funcionario, sair } = useFuncionarioAtual()
   const [trocarSenha, setTrocarSenha] = useState(false)
+  const pousada = usePousada()
+
+  // Aplica as cores da pousada (branding) assim que carregam.
+  useEffect(() => {
+    aplicarTemaPousada(pousada.data)
+  }, [pousada.data])
 
   // A aba Admin só aparece para administradores (a tela e o RLS já bloqueiam o
   // acesso; aqui removemos também o atalho do menu para o funcionário comum).
@@ -81,7 +89,18 @@ export function AppShell() {
   return (
     <div className="flex min-h-dvh flex-col bg-fundo">
       <header className="sticky top-0 z-10 flex min-h-14 items-center justify-between border-b border-slate-200 bg-white px-4">
-        <span className="text-lg font-bold text-marca">PVT</span>
+        <div className="flex min-w-0 items-center gap-2">
+          {pousada.data?.logo_url && (
+            <img
+              src={pousada.data.logo_url}
+              alt=""
+              className="h-8 w-8 shrink-0 rounded object-contain"
+            />
+          )}
+          <span className="truncate text-lg font-bold text-marca">
+            {pousada.data?.nome_exibicao ?? 'PVT'}
+          </span>
+        </div>
         <div className="flex items-center gap-1">
           <button
             onClick={() => setTrocarSenha(true)}
