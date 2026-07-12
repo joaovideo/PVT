@@ -8,7 +8,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-IMG="${PG_IMAGE:-postgres:16-alpine}"
+IMG="${PG_IMAGE:-postgres:17-alpine}"
 CT="pvt-iso-$$"
 FAIL=0
 A="11111111-1111-1111-1111-111111111111"
