@@ -38,7 +38,7 @@ scripts/rehearse.sh supabase/migrations/00XX_*.sql    # 3. ensaia sobre a cópia
 ## Rollback (se uma migration der errado em produção)
 
 ```bash
-gunzip -c backups/pvt-public-<ts>.sql.gz | docker run --rm -i postgres:16-alpine psql "$SUPABASE_DB_URL"
+gunzip -c backups/pvt-public-<ts>.sql.gz | docker run --rm -i postgres:17-alpine psql "$SUPABASE_DB_URL"
 ```
 
 O dump é gerado com `--clean --if-exists`, então ele mesmo derruba e recria os
@@ -50,4 +50,4 @@ objetos do schema `public` a partir do backup.
   reflete o Auth real do Supabase. Se uma migration futura passar a referenciar
   outro objeto de `auth`, estenda o stub.
 - `backups/` é ignorado pelo git (contém dados reais).
-- `PG_IMAGE` sobrescreve a imagem (padrão `postgres:16-alpine`).
+- `PG_IMAGE` sobrescreve a imagem (padrão `postgres:17-alpine`).

@@ -7,7 +7,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-IMG="${PG_IMAGE:-postgres:16-alpine}"
+IMG="${PG_IMAGE:-postgres:17-alpine}"
 CT="pvt-validate-$$"
 cleanup() { docker rm -f "$CT" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
