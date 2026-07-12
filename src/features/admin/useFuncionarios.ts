@@ -21,21 +21,37 @@ interface NovoFuncionario {
   senha: string
 }
 
-/** Cria o funcionário via Supabase Auth — o trigger da migration 0004/0009
- *  cria a linha em `funcionarios` (a partir da 0009 nasce INATIVO até um
- *  admin ativar). Como este projeto exige confirmação de e-mail, o signUp
- *  NÃO substitui a sessão do admin atual. */
+export interface ResultadoCriarFuncionario {
+  reaproveitado: boolean // true = e-mail já existia no Auth; conta reativada
+}
+
+const MENSAGENS_ERRO: Record<string, string> = {
+  '42501': 'Só administradores podem criar funcionários.',
+  '22004': 'Preencha nome e e-mail.',
+  '22023': 'Senha muito curta — use pelo menos 6 caracteres.',
+}
+
+/** Cria (ou reativa) o funcionário via função `criar_ou_reativar_funcionario`
+ *  (migration 0015): grava a senha inicial direto no Auth e deixa a conta já
+ *  ATIVA e com e-mail confirmado. Funciona mesmo se o e-mail já existia (ex.:
+ *  funcionário apagado e recriado) e não depende de e-mail de confirmação. */
 export function useCriarFuncionario() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ nome, email, senha }: NovoFuncionario) => {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password: senha,
-        options: { data: { nome }, emailRedirectTo: urlBaseApp },
+    mutationFn: async ({
+      nome,
+      email,
+      senha,
+    }: NovoFuncionario): Promise<ResultadoCriarFuncionario> => {
+      const { data, error } = await supabase.rpc('criar_ou_reativar_funcionario', {
+        p_nome: nome,
+        p_email: email,
+        p_senha: senha,
       })
-      if (error) throw error
-      return data
+      if (error) throw new Error(MENSAGENS_ERRO[error.code] ?? 'falha')
+      const resultado = data as { ok?: boolean; reaproveitado?: boolean } | null
+      if (!resultado?.ok) throw new Error('falha')
+      return { reaproveitado: resultado.reaproveitado === true }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['funcionarios'] }),
   })
