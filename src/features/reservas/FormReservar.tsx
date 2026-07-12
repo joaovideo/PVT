@@ -56,6 +56,14 @@ export function FormReservar({
 
   const resultadosBusca = useBuscarHospedes(hospedeEscolhido ? '' : buscaHospede)
 
+  // O campo "Nome" do hóspede novo é exibido como `hospedeNovoNome || buscaHospede`.
+  // A validação e o envio precisam usar o MESMO valor — senão o funcionário digita
+  // o nome só na busca, vê o nome na tela, mas a reserva reclama "Informe o hóspede".
+  // Só vale como hóspede novo quando a busca não encontrou ninguém (painel visível),
+  // para não criar hóspede por engano quando há correspondências na lista.
+  const semCorrespondencia = buscaHospede.trim().length >= 2 && resultadosBusca.data?.length === 0
+  const nomeHospedeNovo = (hospedeNovoNome || (semCorrespondencia ? buscaHospede : '')).trim()
+
   useEffect(() => {
     if (!aberto) return
     setBuscaHospede('')
@@ -70,7 +78,7 @@ export function FormReservar({
     setErro(null)
   }, [aberto, valorSugeridoCentavos])
 
-  const temHospede = hospedeEscolhido !== null || hospedeNovoNome.trim().length > 0
+  const temHospede = hospedeEscolhido !== null || nomeHospedeNovo.length > 0
 
   async function confirmar(evento: React.FormEvent) {
     evento.preventDefault()
@@ -86,7 +94,7 @@ export function FormReservar({
     try {
       const reservaId = await criar.mutateAsync({
         hospedeId: hospedeEscolhido?.id ?? null,
-        hospedeNome: hospedeEscolhido?.nome ?? hospedeNovoNome.trim(),
+        hospedeNome: hospedeEscolhido?.nome ?? nomeHospedeNovo,
         hospedeTelefone: hospedeEscolhido?.telefone ?? hospedeNovoTelefone.trim(),
         quartoId: quarto.id,
         checkin,
