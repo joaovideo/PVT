@@ -12,7 +12,8 @@
     "test": "vitest run",
     "db:validate": "bash scripts/validate.sh",
     "db:backup": "bash scripts/backup.sh",
-    "db:rehearse": "bash scripts/rehearse.sh"
+    "db:rehearse": "bash scripts/rehearse.sh",
+    "db:test-isolation": "bash scripts/isolation-test.sh"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.1",

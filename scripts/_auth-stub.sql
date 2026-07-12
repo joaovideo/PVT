@@ -58,7 +58,10 @@ create table if not exists auth.identities (
   updated_at timestamptz
 );
 
--- Referenciada por RLS e por funções security definer. Stub retorna null.
+-- Referenciada por RLS e por funções security definer. Igual ao Supabase real,
+-- lê o "sub" das claims do JWT — aqui via GUC `request.jwt.claims`, o que
+-- permite simular usuários diferentes nos testes de isolamento
+-- (set local request.jwt.claims = '{"sub":"<uuid>"}'). Sem claims → null.
 create or replace function auth.uid() returns uuid language sql stable as $$
-  select null::uuid
+  select (nullif(current_setting('request.jwt.claims', true), '')::json ->> 'sub')::uuid
 $$;
