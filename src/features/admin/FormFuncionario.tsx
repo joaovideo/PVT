@@ -19,7 +19,7 @@ export function FormFuncionario({ aberto, funcionario, aoFechar }: Props) {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState<string | null>(null)
-  const [sucesso, setSucesso] = useState(false)
+  const [sucesso, setSucesso] = useState<{ reaproveitado: boolean } | null>(null)
 
   useEffect(() => {
     if (!aberto) return
@@ -27,7 +27,7 @@ export function FormFuncionario({ aberto, funcionario, aoFechar }: Props) {
     setEmail('')
     setSenha('')
     setErro(null)
-    setSucesso(false)
+    setSucesso(null)
   }, [aberto, funcionario])
 
   async function salvar(evento: React.FormEvent) {
@@ -38,18 +38,15 @@ export function FormFuncionario({ aberto, funcionario, aoFechar }: Props) {
         await atualizar.mutateAsync({ id: funcionario.id, nome })
         aoFechar()
       } else {
-        await criar.mutateAsync({ nome, email, senha })
-        setSucesso(true)
+        const resultado = await criar.mutateAsync({ nome, email, senha })
+        setSucesso({ reaproveitado: resultado.reaproveitado })
       }
     } catch (e) {
       const mensagem = (e as { message?: string })?.message ?? ''
-      if (mensagem.includes('already registered') || mensagem.includes('already been registered')) {
-        setErro('Esse e-mail já está cadastrado.')
-      } else if (mensagem.includes('Password')) {
-        setErro('Senha muito curta — use pelo menos 6 caracteres.')
-      } else {
-        setErro('Não foi possível salvar. Tente de novo.')
-      }
+      // O hook já traduz os erros conhecidos; 'falha' é o genérico.
+      setErro(
+        mensagem && mensagem !== 'falha' ? mensagem : 'Não foi possível salvar. Tente de novo.',
+      )
     }
   }
 
@@ -58,8 +55,10 @@ export function FormFuncionario({ aberto, funcionario, aoFechar }: Props) {
       <Modal aberto={aberto} titulo="Funcionário criado" aoFechar={aoFechar}>
         <div className="flex flex-col gap-3">
           <p className="text-sm text-slate-600">
-            <strong>{nome}</strong> foi criado como <strong>inativo</strong>. Peça para conferir o
-            e-mail (<strong>{email}</strong>) e confirmar o cadastro; depois ative-o aqui na lista.
+            <strong>{nome}</strong> foi {sucesso.reaproveitado ? 'reativado' : 'criado'} e já está{' '}
+            <strong>ativo</strong>. A senha que você definiu já funciona — passe o e-mail (
+            <strong>{email}</strong>) e a senha para a pessoa entrar. Não é preciso confirmar
+            e-mail.
           </p>
           <Button onClick={aoFechar}>Ok</Button>
         </div>

@@ -512,6 +512,10 @@ export type Database = {
         Args: { p_reserva_id: number; p_motivo?: string }
         Returns: undefined
       }
+      criar_ou_reativar_funcionario: {
+        Args: { p_nome: string; p_email: string; p_senha: string }
+        Returns: Json
+      }
       criar_reserva: {
         Args: {
           p_adultos: number
