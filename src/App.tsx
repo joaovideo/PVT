@@ -9,6 +9,7 @@ import { TelaOrcamento } from './features/reservas/TelaOrcamento'
 import { TelaListaReservas } from './features/reservas/TelaListaReservas'
 import { TelaReservaDetalhe } from './features/reservas/TelaReservaDetalhe'
 import { TelaAdmin } from './features/admin/TelaAdmin'
+import { TelaPlataforma } from './features/plataforma/TelaPlataforma'
 import { TelaNovaSenha } from './features/auth/TelaNovaSenha'
 
 // HashRouter: as rotas funcionam no GitHub Pages sem fallback de servidor
@@ -35,6 +36,8 @@ function App() {
             <Route path="/reservas/nova" element={<TelaOrcamento />} />
             <Route path="/reservas/:id" element={<TelaReservaDetalhe />} />
             <Route path="/admin" element={<TelaAdmin />} />
+            {/* Área de super-admin — a própria tela barra quem não é (eh_super_admin) */}
+            <Route path="/plataforma" element={<TelaPlataforma />} />
             {/* Rota temporária da Issue #6 (fora da navegação): valida os hooks */}
             <Route path="/dev-dados" element={<TelaTesteDados />} />
             <Route path="*" element={<Navigate to="/mapa" replace />} />

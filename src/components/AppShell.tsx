@@ -5,6 +5,7 @@ import { SinoAvisos } from '../features/avisos/SinoAvisos'
 import { TrocarSenhaModal } from '../features/auth/TrocarSenhaModal'
 import { usePousada } from '../features/pousada/usePousada'
 import { aplicarTemaPousada } from '../features/pousada/temaPousada'
+import { useSuperAdmin } from '../features/plataforma/usePlataforma'
 
 const abas = [
   {
@@ -76,6 +77,7 @@ export function AppShell() {
   const { funcionario, sair } = useFuncionarioAtual()
   const [trocarSenha, setTrocarSenha] = useState(false)
   const pousada = usePousada()
+  const superAdmin = useSuperAdmin()
 
   // Aplica as cores da pousada (branding) assim que carregam.
   useEffect(() => {
@@ -109,6 +111,15 @@ export function AppShell() {
           >
             {funcionario?.nome}
           </button>
+          {superAdmin.data === true && (
+            <NavLink
+              to="/plataforma"
+              className="min-h-11 px-1 text-sm font-medium text-marca"
+              title="Painel da plataforma"
+            >
+              Plataforma
+            </NavLink>
+          )}
           <SinoAvisos />
           <button onClick={sair} className="min-h-11 px-2 text-sm font-medium text-slate-500">
             Sair
