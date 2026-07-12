@@ -8,7 +8,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-IMG="${PG_IMAGE:-postgres:16-alpine}"
+IMG="${PG_IMAGE:-postgres:17-alpine}"
 
 if [[ "${1:-}" == *.sql.gz ]]; then
   dump="$1"

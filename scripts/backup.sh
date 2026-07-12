@@ -13,17 +13,22 @@ set -euo pipefail
 : "${SUPABASE_DB_URL:?defina SUPABASE_DB_URL com a string de conexão do Postgres de produção}"
 cd "$(dirname "$0")/.."
 
-IMG="${PG_IMAGE:-postgres:16-alpine}"
+# O Supabase está em Postgres 17 — o pg_dump precisa ser >= à versão do servidor.
+IMG="${PG_IMAGE:-postgres:17-alpine}"
 mkdir -p backups
 ts=$(date +%Y%m%d-%H%M%S)
 out="backups/pvt-public-${ts}.sql.gz"
 
-# pg_dump roda DENTRO do Docker (mesma versão do servidor) — não precisa
-# instalar Postgres na máquina, só ter o Docker rodando.
+# pg_dump roda DENTRO do Docker — não precisa instalar Postgres na máquina, só
+# ter o Docker rodando. Se falhar, apaga o arquivo parcial (não deixa lixo).
 echo "→ pg_dump (schema public, schema+dados) de produção → $out"
-docker run --rm "$IMG" pg_dump "$SUPABASE_DB_URL" \
+if ! docker run --rm "$IMG" pg_dump "$SUPABASE_DB_URL" \
   --schema=public --no-owner --no-privileges --clean --if-exists \
-  | gzip >"$out"
+  | gzip >"$out"; then
+  rm -f "$out"
+  echo "❌ backup falhou (confira SUPABASE_DB_URL: usuário postgres.<ref>, pooler de sessão, senha sem símbolos)"
+  exit 1
+fi
 
 echo "✅ backup: $out ($(du -h "$out" | cut -f1))"
 echo "   rollback em produção:  gunzip -c '$out' | docker run --rm -i $IMG psql \"\$SUPABASE_DB_URL\""
