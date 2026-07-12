@@ -6,7 +6,8 @@ leitura do `backup.sh`.
 
 ## Pré-requisitos
 
-- **Docker** rodando (Docker Desktop).
+- **Docker** rodando (Docker Desktop). É o único pré-requisito — o `pg_dump`/
+  `psql` rodam dentro do Docker, não precisa instalar Postgres na máquina.
 - Para `backup.sh` e `rehearse.sh`: a variável `SUPABASE_DB_URL` com a string de
   conexão do Postgres de produção (Supabase → **Settings → Database → Connection
   string**). Use a conexão **direta** ou o **pooler de sessão** — o pooler de
@@ -37,7 +38,7 @@ scripts/rehearse.sh supabase/migrations/00XX_*.sql    # 3. ensaia sobre a cópia
 ## Rollback (se uma migration der errado em produção)
 
 ```bash
-gunzip -c backups/pvt-public-<ts>.sql.gz | psql "$SUPABASE_DB_URL"
+gunzip -c backups/pvt-public-<ts>.sql.gz | docker run --rm -i postgres:16-alpine psql "$SUPABASE_DB_URL"
 ```
 
 O dump é gerado com `--clean --if-exists`, então ele mesmo derruba e recria os
