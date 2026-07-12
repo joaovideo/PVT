@@ -82,5 +82,18 @@ as_anon() { q "set role anon; set request.jwt.claims = ''; $1"; }
 assert "View pública mostra branding das 2 pousadas (anon)"  "$(as_anon 'select count(*) from pousada_publica;')" "2"
 assert "View pública resolve por slug"                       "$(as_anon "select nome_exibicao from pousada_publica where slug='pousada-2';")" "Pousada 2"
 
+# --- Onboarding: super-admin cria pousada 3 + admin C (0019) ---
+novo=$(as_user "$S" "select criar_pousada_com_admin('pousada-3','Pousada 3','c@t3','segredo123','Admin C','Rua 3') ->> 'admin_uid';")
+assert "Onboarding criou a pousada 3"                    "$(as_user "$S" "select count(*) from pousadas where slug='pousada-3';")" "1"
+assert "Onboarding retornou o admin_uid"                "$([ -n "$novo" ] && echo ok)" "ok"
+assert "Novo admin C vê só a própria pousada (a 3)"     "$(as_user "$novo" 'select count(*) from pousadas;')" "1"
+assert "Novo admin C não vê quartos de outros tenants"  "$(as_user "$novo" 'select count(*) from quartos;')" "0"
+# funcionário comum (não super-admin) NÃO cria pousada
+if as_user "$A" "select criar_pousada_com_admin('hack','Hack','h@x','segredo123','H');" >/dev/null 2>&1; then
+  echo "  ✗ admin comum não deveria criar pousada"; FAIL=1
+else
+  echo "  ✓ criar_pousada bloqueado para não-super-admin"
+fi
+
 echo ""
 [ "$FAIL" = 0 ] && echo "✅ isolamento entre tenants OK" || { echo "❌ FALHA no isolamento"; exit 1; }
