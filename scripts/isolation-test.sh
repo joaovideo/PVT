@@ -70,5 +70,17 @@ else
   echo "  ✓ insert cross-tenant bloqueado pelo RLS"
 fi
 
+# --- RLS da própria tabela pousadas (gap fechado no 0018) ---
+assert "Admin A vê só a própria linha em pousadas"       "$(as_user "$A" 'select count(*) from pousadas;')" "1"
+assert "Admin B vê só a própria linha em pousadas"       "$(as_user "$B" 'select count(*) from pousadas;')" "1"
+assert "Super-admin vê as duas em pousadas"              "$(as_user "$S" 'select count(*) from pousadas;')" "2"
+# Admin A não consegue editar o branding da pousada 2 (0 linhas afetadas)
+assert "Admin A não edita branding da pousada 2"         "$(as_user "$A" "with u as (update pousadas set nome_exibicao='Hack' where id=2 returning 1) select count(*) from u;")" "0"
+
+# --- View pública de branding (anon, por slug) ---
+as_anon() { q "set role anon; set request.jwt.claims = ''; $1"; }
+assert "View pública mostra branding das 2 pousadas (anon)"  "$(as_anon 'select count(*) from pousada_publica;')" "2"
+assert "View pública resolve por slug"                       "$(as_anon "select nome_exibicao from pousada_publica where slug='pousada-2';")" "Pousada 2"
+
 echo ""
 [ "$FAIL" = 0 ] && echo "✅ isolamento entre tenants OK" || { echo "❌ FALHA no isolamento"; exit 1; }
