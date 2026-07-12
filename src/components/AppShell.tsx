@@ -74,6 +74,10 @@ export function AppShell() {
   const { funcionario, sair } = useFuncionarioAtual()
   const [trocarSenha, setTrocarSenha] = useState(false)
 
+  // A aba Admin só aparece para administradores (a tela e o RLS já bloqueiam o
+  // acesso; aqui removemos também o atalho do menu para o funcionário comum).
+  const abasVisiveis = abas.filter((aba) => aba.para !== '/admin' || funcionario?.admin === true)
+
   return (
     <div className="flex min-h-dvh flex-col bg-fundo">
       <header className="sticky top-0 z-10 flex min-h-14 items-center justify-between border-b border-slate-200 bg-white px-4">
@@ -101,9 +105,11 @@ export function AppShell() {
 
       <nav
         aria-label="Navegação principal"
-        className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-4 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)]"
+        className={`fixed inset-x-0 bottom-0 z-10 grid border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] ${
+          abasVisiveis.length === 4 ? 'grid-cols-4' : 'grid-cols-3'
+        }`}
       >
-        {abas.map((aba) => (
+        {abasVisiveis.map((aba) => (
           <NavLink
             key={aba.para}
             to={aba.para}
