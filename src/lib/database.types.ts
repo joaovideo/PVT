@@ -508,6 +508,10 @@ export type Database = {
       }
     }
     Functions: {
+      arquivar_e_excluir_reserva: {
+        Args: { p_reserva_id: number; p_motivo?: string }
+        Returns: undefined
+      }
       criar_reserva: {
         Args: {
           p_adultos: number
