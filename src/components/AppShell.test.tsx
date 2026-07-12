@@ -21,6 +21,10 @@ vi.mock('../features/pousada/usePousada', () => ({
   usePousada: () => ({ data: null }),
 }))
 
+vi.mock('../features/plataforma/usePlataforma', () => ({
+  useSuperAdmin: () => ({ data: false }),
+}))
+
 function renderShell() {
   render(
     <MemoryRouter initialEntries={['/mapa']}>

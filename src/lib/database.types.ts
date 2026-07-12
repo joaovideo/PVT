@@ -555,6 +555,17 @@ export type Database = {
         Args: { p_nome: string; p_email: string; p_senha: string }
         Returns: Json
       }
+      criar_pousada_com_admin: {
+        Args: {
+          p_slug: string
+          p_nome: string
+          p_admin_email: string
+          p_admin_senha: string
+          p_admin_nome: string
+          p_endereco?: string
+        }
+        Returns: Json
+      }
       criar_reserva: {
         Args: {
           p_adultos: number
@@ -573,9 +584,11 @@ export type Database = {
         }
         Returns: number
       }
+      eh_super_admin: { Args: never; Returns: boolean }
       formatar_brl: { Args: { v: number }; Returns: string }
       funcionario_ativo: { Args: never; Returns: boolean }
       funcionario_eh_admin: { Args: never; Returns: boolean }
+      pousada_do_usuario: { Args: never; Returns: number }
     }
     Enums: {
       [_ in never]: never
