@@ -13,6 +13,9 @@ dist/
 *.log
 .DS_Store
 
+# backups de produção (dados reais — nunca commitar)
+backups/
+
 # editores
 .vscode/
 .idea/

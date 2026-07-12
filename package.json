@@ -9,7 +9,10 @@
     "preview": "vite preview",
     "lint": "eslint . --max-warnings 0 && prettier --check .",
     "format": "prettier --write .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:validate": "bash scripts/validate.sh",
+    "db:backup": "bash scripts/backup.sh",
+    "db:rehearse": "bash scripts/rehearse.sh"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.1",
