@@ -45,7 +45,8 @@ insert into auth.users (id, email) values
   ('$A','a@t1'), ('$B','b@t2'), ('$S','s@plat');
 insert into funcionarios (id, nome, ativo, admin, pousada_id) values
   ('$A','Admin A', true, true, 1),
-  ('$B','Admin B', true, true, 2);
+  ('$B','Admin B', true, true, 2),
+  ('$S','Super/Func', true, true, 1);  -- super-admin que TAMBÉM é funcionário (caso do João)
 insert into plataforma_admins (user_id, nome) values ('$S','Super');
 
 insert into quartos (nome, capacidade_max, pousada_id) values
