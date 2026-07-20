@@ -23,14 +23,16 @@ export function TelaOrcamento() {
   const [checkout, setCheckout] = useState(
     sugestao?.checkinSugerido ? addDiasStr(sugestao.checkinSugerido, 1) : '',
   )
-  const [adultos, setAdultos] = useState(2)
-  const [criancas, setCriancas] = useState(0)
+  // Aceitam '' enquanto o usuário está digitando (permite apagar o campo);
+  // o mínimo é reaplicado no onBlur.
+  const [adultos, setAdultos] = useState<number | ''>(2)
+  const [criancas, setCriancas] = useState<number | ''>(0)
   const [nivel, setNivel] = useState<NivelPreco>('baixa')
   const [quartoParaReservar, setQuartoParaReservar] = useState<Quarto | null>(null)
 
   const periodo: Periodo = { inicio: checkin, fim: checkout }
   const diarias = checkout ? numeroDeDiarias(periodo) : 0
-  const totalPessoas = adultos + criancas
+  const totalPessoas = (adultos || 0) + (criancas || 0)
 
   const disponiveis = useQuartosDisponiveis(periodo, totalPessoas)
 
@@ -65,16 +67,26 @@ export function TelaOrcamento() {
         <Input
           rotulo="Adultos"
           type="number"
+          inputMode="numeric"
           min={1}
           value={adultos}
-          onChange={(e) => setAdultos(Math.max(1, Number(e.target.value)))}
+          onChange={(e) => {
+            const v = e.target.value
+            setAdultos(v === '' ? '' : Math.max(0, Math.floor(Number(v))))
+          }}
+          onBlur={() => setAdultos((n) => (n === '' || n < 1 ? 1 : n))}
         />
         <Input
           rotulo="Crianças"
           type="number"
+          inputMode="numeric"
           min={0}
           value={criancas}
-          onChange={(e) => setCriancas(Math.max(0, Number(e.target.value)))}
+          onChange={(e) => {
+            const v = e.target.value
+            setCriancas(v === '' ? '' : Math.max(0, Math.floor(Number(v))))
+          }}
+          onBlur={() => setCriancas((n) => (n === '' ? 0 : n))}
         />
       </div>
       <Select
@@ -157,8 +169,8 @@ export function TelaOrcamento() {
           quarto={quartoParaReservar}
           checkin={checkin}
           checkout={checkout}
-          adultos={adultos}
-          criancas={criancas}
+          adultos={adultos || 1}
+          criancas={criancas || 0}
           nivel={nivel}
           valorSugeridoCentavos={valorDoQuarto(quartoParaReservar)}
           aoFechar={() => setQuartoParaReservar(null)}
